@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Ordens de Compra · Sushi Boulevard</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+<style>
+  :root {
+    --black: #0a0a0a;
+    --red: #c8102e;
+    --red-dark: #9e0c24;
+    --red-light: #f5e6e9;
+    --white: #fafafa;
+    --gray-100: #f2f2f2;
+    --gray-200: #e0e0e0;
+    --gray-400: #9e9e9e;
+    --gray-600: #616161;
+    --gold: #b8960c;
+    --gold-light: #f9f3dc;
+    --success: #1b5e20;
+    --success-bg: #e8f5e9;
+    --warning: #e65100;
+    --warning-bg: #fff3e0;
+    --error: #b71c1c;
+    --error-bg: #ffebee;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: sans-serif; 
+    background: var(--black);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  
+  header {
+    background: var(--black);
+    border-bottom: 1px solid #222;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo-area { display: flex; align-items: center; gap: 16px; }
+
+  .logo-icon {
+    width: 44px; height: 44px;
+    background: var(--red);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; font-weight: 900; font-family: serif; color: white;
+  }
+
+  .logo-text { font-family: serif; font-size: 18px; font-weight: 700; color: white; line-height: 1.2; }
+  .logo-sub { font-size: 10px; font-weight: 400; color: var(--gray-400); letter-spacing: 2px; text-transform: uppercase; }
+
+  nav { display: flex; gap: 4px; }
+  .nav-btn {
+    background: transparent; border: 1px solid transparent; color: var(--gray-400);
+    padding: 8px 18px; border-radius: 6px; font-family: sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all .2s; letter-spacing: .3px;
+  }
+  .nav-btn:hover { color: white; border-color: #333; }
+  .nav-btn.active { color: white; background: #1a1a1a; border-color: #333; }
+
+  main { padding: 48px 40px; max-width: 1100px; margin: 0 auto; }
+
+  .screen { display: none; animation: fadeIn .3s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+
+  .home-hero { text-align: center; padding: 60px 0 48px; }
+  .home-hero h1 { font-family: serif; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 900; line-height: 1.15; margin-bottom: 16px; }
+  .home-hero h1 span { color: var(--red); }
+  .home-hero p { color: var(--gray-400); font-size: 15px; max-width: 520px; margin: 0 auto 48px; line-height: 1.7; }
+
+  .home-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 760px; margin: 0 auto; }
+  .home-card { background: #111; border: 1px solid #222; border-radius: 16px; padding: 36px 28px; cursor: pointer; transition: all .25s; text-align: left; position: relative; overflow: hidden; }
+  .home-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--red); opacity: 0; transition: opacity .25s; }
+  .home-card:hover { border-color: #333; transform: translateY(-3px); box-shadow: 0 12px 40px rgba(200,16,46,.12); }
+  .home-card:hover::before { opacity: 1; }
+  .card-icon { width: 52px; height: 52px; background: #1a1a1a; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 22px; }
+  .home-card h3 { font-family: serif; font-size: 17px; font-weight: 700; margin-bottom: 8px; color: white; }
+  .home-card p { font-size: 13px; color: var(--gray-400); line-height: 1.6; }
+  .card-arrow { position: absolute; bottom: 20px; right: 20px; font-size: 20px; color: var(--red); opacity: 0; transition: all .25s; }
+  .home-card:hover .card-arrow { opacity: 1; transform: translate(2px, -2px); }
+
+  .section-header { margin-bottom: 36px; display: flex; align-items: center; gap: 16px; }
+  .section-header .back-btn { background: #1a1a1a; border: 1px solid #2a2a2a; color: var(--gray-400); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-family: sans-serif; display: flex; align-items: center; gap: 6px; transition: all .2s; white-space: nowrap; }
+  .section-header .back-btn:hover { border-color: #444; color: white; }
+  .section-header-text h2 { font-family: serif; font-size: 1.8rem; font-weight: 700; }
+  .section-header-text p { font-size: 13px; color: var(--gray-400); margin-top: 4px; }
+
+  /* ── UPLOAD ZONE ── */
+  .upload-zone { border: 2px dashed #2a2a2a; border-radius: 16px; padding: 64px 40px; text-align: center; cursor: pointer; transition: all .25s; background: #0d0d0d; position: relative; }
+  .upload-zone:hover, .upload-zone.dragover { border-color: var(--red); background: #130508; }
+  .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-icon { font-size: 48px; margin-bottom: 16px; }
+  .upload-zone h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .upload-zone p { font-size: 13px; color: var(--gray-400); }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; font-family: sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; letter-spacing: .2px; }
+  .btn-primary { background: var(--red); color: white; }
+  .btn-primary:hover { background: var(--red-dark); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(200,16,46,.3); }
+  .btn-secondary { background: #1a1a1a; color: var(--gray-400); border: 1px solid #2a2a2a; }
+  .btn-secondary:hover { border-color: #444; color: white; }
+  .btn-outline { background: transparent; color: var(--red); border: 1.5px solid var(--red); }
+  .btn-outline:hover { background: var(--red); color: white; }
+  .btn-sm { padding: 8px 16px; font-size: 12px; }
+
+  .file-preview { background: #111; border: 1px solid #222; border-radius: 12px; padding: 20px 24px; display: flex; align-items: center; gap: 16px; margin-top: 20px; }
+  .file-icon { font-size: 28px; }
+  .file-info { flex: 1; }
+  .file-info strong { font-size: 14px; display: block; }
+  .file-info span { font-size: 12px; color: var(--gray-400); }
+
+  .alert { padding: 14px 18px; border-radius: 10px; font-size: 13px; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+  .alert-success { background: #0d2010; border: 1px solid #1a4023; color: #5dbf6e; }
+  .alert-warning { background: #1f1200; border: 1px solid #3d2800; color: #ffb74d; }
+  .alert-error { background: #1a0505; border: 1px solid #3b0d0d; color: #ef9a9a; }
+  .alert-info { background: #0a0f1a; border: 1px solid #1a2540; color: #82b1ff; }
+
+  .results-grid { display: grid; gap: 14px; }
+  .supplier-card { background: #0f0f0f; border: 1px solid #1e1e1e; border-radius: 14px; overflow: hidden; transition: border-color .2s; }
+  .supplier-card.ok { border-left: 3px solid #2e7d32; }
+  .supplier-card.error { border-left: 3px solid #c62828; }
+  .supplier-card.partial { border-left: 3px solid #e65100; }
+  .supplier-card-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; user-select: none; }
+  .supplier-card-header:hover { background: #141414; }
+  .supplier-name { font-weight: 600; font-size: 15px; flex: 1; }
+  
+  .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; white-space: nowrap; }
+  .badge-ok { background: #1b5e2020; color: #66bb6a; border: 1px solid #2e7d3240; }
+  .badge-error { background: #b71c1c20; color: #ef9a9a; border: 1px solid #c6282840; }
+  .badge-partial { background: #e6510020; color: #ffb74d; border: 1px solid #e6510040; }
+
+  .supplier-card-body { padding: 0 20px 16px; border-top: 1px solid #1e1e1e; }
+  .items-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 12px; }
+  .items-table th { text-align: left; font-weight: 600; color: var(--gray-400); padding: 6px 8px; border-bottom: 1px solid #222; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; }
+  .items-table td { padding: 7px 8px; border-bottom: 1px solid #1a1a1a; color: #ccc; vertical-align: middle; }
+  .items-table tr:last-child td { border-bottom: none; }
+  .items-table td.missing { color: #ef9a9a; font-style: italic; font-size: 11px; }
+
+  input.sc-edit-input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 6px 10px; border-radius: 4px; width: 100%; outline: none; transition: border-color .2s; font-size: 13px; font-family: sans-serif; }
+  input.sc-edit-input:focus { border-color: var(--red); }
+
+  .catalog-toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+  .search-input { flex: 1; min-width: 200px; background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 16px; color: white; font-family: sans-serif; font-size: 13px; outline: none; transition: border-color .2s; }
+  .search-input:focus { border-color: var(--red); }
+  select.search-input { cursor: pointer; min-width: 180px; flex: unset; }
+
+  .catalog-table-wrap { background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 12px; overflow: hidden; }
+  .catalog-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .catalog-table th { background: #111; padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--gray-400); border-bottom: 1px solid #1e1e1e; position: sticky; top: 72px; }
+  .catalog-table td { padding: 11px 16px; border-bottom: 1px solid #151515; color: #ccc; vertical-align: middle; }
+  .catalog-table tbody tr:hover td { background: #111; }
+  .catalog-table tbody tr:last-child td { border-bottom: none; }
+
+  input.cell-edit { background: transparent; border: none; border-bottom: 1px dashed #333; color: white; font-family: sans-serif; font-size: 13px; width: 100%; outline: none; padding: 2px 0; transition: border-color .2s; }
+  input.cell-edit:focus { border-bottom-color: var(--red); }
+  .del-btn { background: transparent; border: none; color: #555; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; transition: color .2s; }
+  .del-btn:hover { color: var(--red); }
+
+  .add-form { background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .add-form h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--gray-400); letter-spacing: .5px; text-transform: uppercase; }
+  .form-row { display: grid; grid-template-columns: 2fr 2fr 1fr 1fr auto; gap: 10px; align-items: end; }
+  .form-field label { display: block; font-size: 11px; font-weight: 600; color: var(--gray-400); margin-bottom: 6px; letter-spacing: .5px; text-transform: uppercase; }
+  .form-field input, .form-field select { width: 100%; background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 12px; color: white; font-family: sans-serif; font-size: 13px; outline: none; transition: border-color .2s; }
+  .form-field input:focus, .form-field select:focus { border-color: var(--red); }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--gray-400); }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state p { font-size: 14px; }
+
+  .stats-bar { display: flex; gap: 20px; background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 12px; padding: 16px 24px; margin-bottom: 24px; flex-wrap: wrap; }
+  .stat { text-align: center; flex: 1; min-width: 80px; }
+  .stat .val { font-size: 22px; font-weight: 700; font-family: serif; }
+  .stat .lbl { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
+  .stat .val.red { color: var(--red); }
+  .stat .val.green { color: #66bb6a; }
+  .stat .val.orange { color: #ffb74d; }
+
+  .divider { height: 1px; background: #1a1a1a; margin: 32px 0; }
+
+  #toast { position: fixed; bottom: 30px; right: 30px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 14px 20px; font-size: 13px; color: white; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all .3s; max-width: 320px; box-shadow: 0 8px 32px rgba(0,0,0,.5); pointer-events: none; }
+  #toast.show { opacity: 1; transform: none; }
+  #toast.success { border-left: 3px solid #66bb6a; }
+  #toast.error { border-left: 3px solid var(--red); }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #0a0a0a; }
+  ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #444; }
+
+  .collapse-content { display: none; }
+  .collapse-content.open { display: block; }
+  .chevron { transition: transform .2s; display: inline-block; }
+  .chevron.open { transform: rotate(180deg); }
+
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 700px) {
+    header { padding: 0 16px; }
+    main { padding: 24px 16px; }
+    .home-cards { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <div class="logo-icon">SB</div>
+    <div>
+      <div class="logo-text">Gerador de Pedidonator</div>
+      <div class="logo-sub">Do Felipe</div>
+    </div>
+  </div>
+  <nav>
+    <button class="nav-btn active" onclick="goHome()">Início</button>
+    <button class="nav-btn" onclick="goScreen('catalog')">Cadastro</button>
+    <button class="nav-btn" onclick="goScreen('import')">Importar SC</button>
+  </nav>
+</header>
+
+<main>
+
+  <div id="screen-home" class="screen active">
+    <div class="home-hero">
+      <h1>Gerador de <span>Ordens de Compra</span></h1>
+      <p>Automatize a emissão de pedidos de compra com agilidade e precisão. Importe a solicitação e gere os PDFs padronizados em segundos.</p>
+    </div>
+    <div class="home-cards">
+      <div class="home-card" onclick="goScreen('import')">
+        <div class="card-icon">📥</div>
+        <h3>Importar Solicitação de Compra</h3>
+        <p>Carregue o arquivo Excel da equipe operacional e gere as Ordens de Compra em PDF, por fornecedor.</p>
+        <div class="card-arrow">↗</div>
+      </div>
+      <div class="home-card" onclick="goScreen('catalog')">
+        <div class="card-icon">🗂️</div>
+        <h3>Cadastro de Produtos e Preços</h3>
+        <p>Gerencie a base de dados de produtos, unidades e preços por fornecedor. Importe, edite e exporte facilmente.</p>
+        <div class="card-arrow">↗</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-import" class="screen">
+    <div class="section-header">
+      <button class="back-btn" onclick="goHome()">← Voltar</button>
+      <div class="section-header-text">
+        <h2>Importar Solicitação de Compra</h2>
+        <p>Selecione a unidade e carregue o arquivo Excel gerado pela equipe operacional</p>
+      </div>
+    </div>
+
+    <div class="add-form" style="margin-bottom: 24px;">
+      <div class="form-row" style="grid-template-columns: 2fr 1fr; gap: 20px;">
+        <div class="form-field">
+          <label>Unidade de Destino</label>
+          <select id="unit-dest">
+            <option value="cidade_nova">Sushi Boulevard - Cidade Nova</option>
+            <option value="delivery_umarizal">Sushi Boulevard - Delivery Umarizal</option>
+            <option value="duque">Sushi Boulevard - Duque de Caxias</option>
+            <option value="senador_lemos">Sushi Boulevard - Senador Lemos</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Número da OC (Opcional)</label>
+          <input type="text" id="oc-number" placeholder="Ex: 20260429-01">
+        </div>
+      </div>
+    </div>
+
+    <div id="upload-area">
+      <div class="upload-zone" id="drop-zone">
+        <input type="file" id="sc-file" accept=".xlsx,.xlsm" onchange="handleSCFile(this)">
+        <div class="upload-icon">📊</div>
+        <h3>Arraste o arquivo ou clique para selecionar</h3>
+        <p>Formatos aceitos: .xlsx · .xlsm</p>
+      </div>
+
+      <div id="file-preview" style="display:none">
+        <div class="file-preview">
+          <div class="file-icon">📄</div>
+          <div class="file-info">
+            <strong id="fp-name">—</strong>
+            <span id="fp-size">—</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" id="btn-generate" onclick="processSC()">
+              ⚡ Gerar Pedido de Compra
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="resetImport()">✕ Alterar arquivo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="results-area" style="display:none; margin-top:32px;">
+      <div class="divider"></div>
+      <div id="stats-bar-results"></div>
+      <div id="alerts-area"></div>
+      <div id="results-grid" class="results-grid" style="margin-top:20px;"></div>
+    </div>
+  </div>
+
+  <div id="screen-catalog" class="screen">
+    <div class="section-header">
+      <button class="back-btn" onclick="goHome()">← Voltar</button>
+      <div class="section-header-text">
+        <h2>Cadastro de Produtos e Preços</h2>
+        <p>Base de dados utilizada para gerar as Ordens de Compra</p>
+      </div>
+    </div>
+
+    <div class="add-form">
+      <h3>+ Adicionar produto</h3>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Fornecedor</label>
+          <input type="text" id="new-supplier" placeholder="Nome do fornecedor" list="supplier-list" autocomplete="off">
+          <datalist id="supplier-list"></datalist>
+        </div>
+        <div class="form-field">
+          <label>Produto</label>
+          <input type="text" id="new-product" placeholder="Descrição do produto">
+        </div>
+        <div class="form-field">
+          <label>Unidade</label>
+          <input type="text" id="new-unit" placeholder="KG, MÇ, UN...">
+        </div>
+        <div class="form-field">
+          <label>Preço (R$)</label>
+          <input type="number" id="new-price" placeholder="0,00" step="0.01" min="0">
+        </div>
+        <div class="form-field">
+          <label>&nbsp;</label>
+          <button class="btn btn-primary" onclick="addProduct()">Adicionar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="catalog-toolbar">
+      <input type="text" class="search-input" id="cat-search" placeholder="🔍  Buscar produto ou fornecedor..." oninput="renderCatalog()">
+      <select class="search-input" id="cat-supplier-filter" onchange="renderCatalog()">
+        <option value="">Todos os fornecedores</option>
+      </select>
+      <button class="btn btn-secondary btn-sm" onclick="importCatalogExcel()">📤 Importar Excel</button>
+      <input type="file" id="cat-import-file" accept=".xlsx,.xlsm" style="display:none" onchange="handleCatalogImport(this)">
+      <button class="btn btn-outline btn-sm" onclick="exportCatalog()">⬇ Exportar</button>
+      <button class="btn btn-outline btn-sm" style="color: #ef9a9a; border-color: #ef9a9a; margin-left: auto;" onclick="clearCatalog()">🗑️ Limpar Tudo</button>
+    </div>
+
+    <div id="catalog-stats" class="stats-bar" style="display:none"></div>
+
+    <div class="catalog-table-wrap">
+      <table class="catalog-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fornecedor</th>
+            <th>Produto</th>
+            <th>Unidade</th>
+            <th>Preço Unit. (R$)</th>
+            <th style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="catalog-body">
+          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🗃️</div><p>Nenhum produto cadastrado.<br>Adicione produtos acima ou importe um arquivo Excel.</p></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────
+//  STATE & DATA
+// ─────────────────────────────────────────────
+let catalog = JSON.parse(localStorage.getItem('sb_catalog') || '[]');
+let scData = null;
+let scFile = null;
+
+// Controle de Accordions Abertos na SC para re-renderização suave
+let openCards = new Set(); 
+
+// Novas Unidades Atualizadas
+const UNITS = {
+  cidade_nova: { nome: "Sushi Boulevard Delivery Unidade Cidade Nova Ltda", cnpj: "40.486.493/0001-36", ie: "535171144113", end: "Tv. WE 44, nº 1, Cidade Nova 4, Belém/PA", tel: "(91) 98413-7799" },
+  delivery_umarizal: { nome: "Sushi Boulevard Delivery Ltda", cnpj: "23.994.886/0002-12", ie: "156587319", end: "Tv. Dom Romualdo de Seixas, nº 425, Belém/PA", tel: "(91) 98413-7799" },
+  duque: { nome: "Sushi Boulevard Restaurante Unidade Duque de Caxias Ltda", cnpj: "27.655.907/0001-45", ie: "155619934", end: "Av. Duque de Caxias, nº 510, Belém/PA", tel: "(91) 98413-7799" },
+  senador_lemos: { nome: "Sushi Boulevard Restaurante Ltda", cnpj: "23.994.886/0001-31", ie: "155118900", end: "Av. Senador Lemos, nº 356, Belém/PA", tel: "(91) 98413-7799" }
+};
+
+// ─────────────────────────────────────────────
+//  NAV
+// ─────────────────────────────────────────────
+function goHome() { goScreen('home'); }
+
+function goScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  const navIdx = { home: 0, catalog: 1, import: 2 };
+  const navBtns = document.querySelectorAll('.nav-btn');
+  if (navIdx[id] !== undefined) navBtns[navIdx[id]].classList.add('active');
+  if (id === 'catalog') { renderCatalog(); renderCatalogStats(); updateSupplierList(); }
+}
+
+// ─────────────────────────────────────────────
+//  TOAST
+// ─────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = 'info') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = ''; }, 3500);
+}
+
+// ─────────────────────────────────────────────
+//  CATALOG LOGIC
+// ─────────────────────────────────────────────
+function saveCatalog() { localStorage.setItem('sb_catalog', JSON.stringify(catalog)); }
+function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+
+function addProduct() {
+  const supplier = document.getElementById('new-supplier').value.trim();
+  const product = document.getElementById('new-product').value.trim();
+  const unit = document.getElementById('new-unit').value.trim();
+  const price = parseFloat(document.getElementById('new-price').value);
+
+  if (!supplier || !product || !unit || isNaN(price) || price < 0) {
+    showToast('Preencha todos os campos corretamente.', 'error');
+    return;
+  }
+
+  const dup = catalog.find(c => c.supplier.toLowerCase() === supplier.toLowerCase() && c.product.toLowerCase() === product.toLowerCase());
+  if (dup) { showToast('Produto já cadastrado para este fornecedor.', 'error'); return; }
+
+  catalog.push({ id: generateId(), supplier, product, unit, price });
+  saveCatalog();
+  ['new-supplier','new-product','new-unit','new-price'].forEach(id => document.getElementById(id).value = '');
+  renderCatalog(); renderCatalogStats(); updateSupplierList();
+  showToast('Produto adicionado com sucesso!', 'success');
+}
+
+function deleteProduct(id) {
+  if (!confirm('Remover este produto do cadastro?')) return;
+  catalog = catalog.filter(c => c.id !== id);
+  saveCatalog(); renderCatalog(); renderCatalogStats(); updateSupplierList();
+  showToast('Produto removido.', 'info');
+}
+
+// NOVO: Função para limpar o catálogo inteiro
+function clearCatalog() {
+  if (!confirm('⚠️ TEM CERTEZA? Isso apagará todos os produtos da base de dados local. A ação não pode ser desfeita.')) return;
+  catalog = [];
+  saveCatalog(); 
+  renderCatalog(); 
+  renderCatalogStats(); 
+  updateSupplierList();
+  showToast('Base de dados limpa com sucesso.', 'success');
+}
+
+function updateField(id, field, val) {
+  const item = catalog.find(c => c.id === id);
+  if (!item) return;
+  if (field === 'price') {
+    const p = parseFloat(val);
+    if (!isNaN(p)) item[field] = p;
+  } else {
+    item[field] = val;
+  }
+  saveCatalog();
+}
+
+function renderCatalog() {
+  const search = (document.getElementById('cat-search')?.value || '').toLowerCase();
+  const supplierFilter = (document.getElementById('cat-supplier-filter')?.value || '').toLowerCase();
+
+  let items = catalog.filter(c => {
+    const matchSearch = !search || c.product.toLowerCase().includes(search) || c.supplier.toLowerCase().includes(search);
+    const matchSupplier = !supplierFilter || c.supplier.toLowerCase() === supplierFilter;
+    return matchSearch && matchSupplier;
+  });
+  const tbody = document.getElementById('catalog-body');
+  if (items.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🗃️</div><p>${catalog.length === 0 ? 'Nenhum produto cadastrado.<br>Adicione produtos acima ou importe um arquivo Excel.' : 'Nenhum produto encontrado para o filtro aplicado.'}</p></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = items.map((c, i) => `
+    <tr>
+      <td style="color:var(--gray-400);font-size:11px">${i+1}</td>
+      <td><input class="cell-edit" value="${esc(c.supplier)}" onchange="updateField('${c.id}','supplier',this.value)"></td>
+      <td><input class="cell-edit" value="${esc(c.product)}" onchange="updateField('${c.id}','product',this.value)"></td>
+      <td><input class="cell-edit" value="${esc(c.unit)}" onchange="updateField('${c.id}','unit',this.value)" style="width:60px"></td>
+      <td><input class="cell-edit" type="number" step="0.01" value="${c.price.toFixed(2)}" onchange="updateField('${c.id}','price',this.value)" style="width:80px"></td>
+      <td><button class="del-btn" onclick="deleteProduct('${c.id}')">🗑</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderCatalogStats() {
+  const el = document.getElementById('catalog-stats');
+  if (catalog.length === 0) { el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  const suppliers = new Set(catalog.map(c => c.supplier)).size;
+  el.innerHTML = `
+    <div class="stat"><div class="val red">${catalog.length}</div><div class="lbl">Produtos</div></div>
+    <div class="stat"><div class="val">${suppliers}</div><div class="lbl">Fornecedores</div></div>
+    <div class="stat"><div class="val">R$ ${Math.min(...catalog.map(c=>c.price)).toFixed(2)}</div><div class="lbl">Menor preço</div></div>
+    <div class="stat"><div class="val">R$ ${Math.max(...catalog.map(c=>c.price)).toFixed(2)}</div><div class="lbl">Maior preço</div></div>
+  `;
+}
+
+function updateSupplierList() {
+  const suppliers = [...new Set(catalog.map(c => c.supplier))].sort();
+  document.getElementById('supplier-list').innerHTML = suppliers.map(s => `<option value="${esc(s)}">`).join('');
+  const sel = document.getElementById('cat-supplier-filter');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Todos os fornecedores</option>' + suppliers.map(s => `<option value="${s.toLowerCase()}" ${s.toLowerCase() === current ? 'selected' : ''}>${s}</option>`).join('');
+}
+
+function importCatalogExcel() { document.getElementById('cat-import-file').click(); }
+function handleCatalogImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'binary' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      let added = 0;
+      let updated = 0;
+      rows.forEach(row => {
+        const supplier = String(row['Fornecedor'] || row['FORNECEDOR'] || row['fornecedor'] || '').trim();
+        const product = String(row['Produto'] || row['PRODUTO'] || row['produto'] || row['Descrição'] || '').trim();
+        const unit = String(row['Unidade'] || row['UNIDADE'] || row['unidade'] || row['UN'] || '').trim();
+        const rawPrice = row['Preço'] || row['PREÇO'] || row['preco'] || row['Valor'] || row['VALOR'] || 0;
+        const price = parseFloat(String(rawPrice).replace(',', '.')) || 0;
+        
+        if (!supplier || !product) return;
+        
+        const exists = catalog.find(c => c.supplier.toLowerCase() === supplier.toLowerCase() && c.product.toLowerCase() === product.toLowerCase());
+        
+        if (exists) { 
+          // Correção Importante: Força a sobrescrita do preço pelo Excel, ignorando se for 0 para permitir "limpeza/correção" manual da base
+          exists.unit = unit || exists.unit; 
+          exists.price = price; 
+          updated++;
+          return; 
+        }
+        
+        catalog.push({ id: generateId(), supplier, product, unit, price });
+        added++;
+      });
+      saveCatalog(); renderCatalog(); renderCatalogStats(); updateSupplierList();
+      showToast(`${added} produto(s) importado(s) e ${updated} atualizado(s) com sucesso.`, 'success');
+    } catch (err) {
+      showToast('Erro ao ler o arquivo. Verifique o formato.', 'error');
+    }
+    input.value = '';
+  };
+  reader.readAsBinaryString(file);
+}
+
+function exportCatalog() {
+  if (catalog.length === 0) { showToast('Nenhum produto para exportar.', 'info'); return; }
+  const rows = catalog.map(c => ({ Fornecedor: c.supplier, Produto: c.product, Unidade: c.unit, 'Preço': c.price }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Cadastro');
+  XLSX.writeFile(wb, 'Cadastro_Produtos_SushiBoulevard.xlsx');
+  showToast('Exportado com sucesso!', 'success');
+}
+
+// ─────────────────────────────────────────────
+//  SC IMPORT
+// ─────────────────────────────────────────────
+function handleSCFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  scFile = file;
+  document.getElementById('fp-name').textContent = file.name;
+  document.getElementById('fp-size').textContent = (file.size / 1024).toFixed(1) + ' KB';
+  document.getElementById('file-preview').style.display = 'block';
+  document.getElementById('results-area').style.display = 'none';
+}
+
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (!file) return;
+  const inp = document.getElementById('sc-file');
+  const dt = new DataTransfer(); dt.items.add(file); inp.files = dt.files;
+  handleSCFile(inp);
+});
+
+function resetImport() {
+  scFile = null; scData = null;
+  document.getElementById('sc-file').value = '';
+  document.getElementById('file-preview').style.display = 'none';
+  document.getElementById('results-area').style.display = 'none';
+  openCards.clear();
+}
+
+// ─────────────────────────────────────────────
+//  PARSE SC EXCEL
+// ─────────────────────────────────────────────
+function processSC() {
+  if (!scFile) return;
+  const btn = document.getElementById('btn-generate');
+  btn.innerHTML = '<span class="spinner"></span> Processando...';
+  btn.disabled = true;
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'binary' });
+      scData = parseSCWorkbook(wb);
+      openCards.clear();
+      renderResults();
+    } catch (err) {
+      showToast('Erro ao processar o arquivo: ' + err.message, 'error');
+    }
+    btn.innerHTML = '⚡ Gerar Pedido de Compra';
+    btn.disabled = false;
+  };
+  reader.readAsBinaryString(scFile);
+}
+
+function parseSCWorkbook(wb) {
+  const SKIP_SHEETS = ['BASE', 'base', 'Base'];
+  const result = [];
+  wb.SheetNames.forEach(sheetName => {
+    if (SKIP_SHEETS.some(s => s.toLowerCase() === sheetName.toLowerCase())) return;
+    const ws = wb.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+
+    let supplierName = sheetName;
+    let supplierContact = '', paymentForm = '', paymentTerm = '', orderDate = '', deliveryDate = '';
+    let items = [];
+    let foundItemsHeader = false;
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const rowStr = row.join('\t').toLowerCase();
+
+      if (!foundItemsHeader && rowStr.includes('descrição') && rowStr.includes('quantidade')) { foundItemsHeader = true; continue; }
+
+      if (foundItemsHeader) {
+        const itemNum = row[0];
+        const productName = String(row[1] || '').trim();
+        const unitStr = String(row[2] || '').trim();
+        const qty = parseFloat(String(row[3] || '0').replace(',', '.')) || 0;
+
+        if (!productName || productName.toLowerCase().includes('observ')) break;
+        if (typeof itemNum === 'number' || (typeof itemNum === 'string' && /^\d+$/.test(itemNum.trim()))) {
+          if (productName) items.push({ product: productName, unit: unitStr, qty });
+        }
+      }
+
+      if (rowStr.includes('fornecedor:')) {
+        for (let j = 0; j < row.length; j++) {
+          if (String(row[j]).toLowerCase().includes('fornecedor:')) supplierName = String(row[j+1] || row[j]).replace(/fornecedor:\s*/i, '').trim() || sheetName;
+          if (String(row[j]).toLowerCase().includes('contato:')) supplierContact = String(row[j+1] || '').trim();
+        }
+      }
+
+      if (rowStr.includes('forma de pagamento:')) {
+        for (let j = 0; j < row.length; j++) {
+          if (String(row[j]).toLowerCase().includes('forma de pagamento:')) paymentForm = String(row[j+1] || '').trim();
+          if (String(row[j]).toLowerCase().includes('prazo de pagamento:')) paymentTerm = String(row[j+1] || '').trim();
+        }
+      }
+
+      if (rowStr.includes('data da oc:')) {
+        for (let j = 0; j < row.length; j++) {
+          if (String(row[j]).toLowerCase().includes('data da oc:')) orderDate = excelDateToStr(row[j+1]);
+          if (String(row[j]).toLowerCase().includes('previsão de entrega:')) deliveryDate = excelDateToStr(row[j+1]);
+        }
+      }
+    }
+
+    if (!orderDate) orderDate = today();
+    if (!deliveryDate) deliveryDate = today();
+
+    if (items.length > 0) {
+      result.push({ sheetName, supplierName: supplierName || sheetName, supplierContact, paymentForm, paymentTerm, orderDate, deliveryDate, items });
+    }
+  });
+  return result;
+}
+
+function excelDateToStr(val) {
+  if (!val) return today();
+  if (typeof val === 'number') { return new Date((val - 25569) * 86400 * 1000).toLocaleDateString('pt-BR'); }
+  if (typeof val === 'string') {
+    const parts = val.match(/\d+/g);
+    if (parts && parts.length >= 3) return `${parts[0].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[2]}`;
+    return val;
+  }
+  return today();
+}
+
+function today() { return new Date().toLocaleDateString('pt-BR'); }
+
+function matchItems(supplierName, items) {
+  return items.map(item => {
+    // Preserve existing 'found' logic if it was already matched/edited manually
+    if (item.found !== undefined) return item; 
+
+    const catItem = catalog.find(c => {
+      const suppMatch = supplierNameMatch(c.supplier, supplierName);
+      const prodMatch = c.product.toLowerCase().replace(/\s+/g,' ').trim() === item.product.toLowerCase().replace(/\s+/g,' ').trim();
+      return suppMatch && prodMatch;
+    });
+
+    if (catItem) return { ...item, unit: catItem.unit || item.unit, price: catItem.price, found: true };
+    return { ...item, price: 0, found: false };
+  });
+}
+
+function supplierNameMatch(catSupplier, scSupplier) {
+  const a = catSupplier.toLowerCase().replace(/[^a-z0-9]/g,' ').split(/\s+/).filter(Boolean);
+  const b = scSupplier.toLowerCase().replace(/[^a-z0-9]/g,' ').split(/\s+/).filter(Boolean);
+  return a.some(w => w.length > 2 && b.some(x => x.includes(w) || w.includes(x)));
+}
+
+// ─────────────────────────────────────────────
+//  INLINE EDITING ON IMPORT RESULTS
+// ─────────────────────────────────────────────
+function updateSCItem(sIdx, iIdx, field, val) {
+  const num = parseFloat(String(val).replace(',', '.')) || 0;
+  let item = scData[sIdx]._matched[iIdx];
+  item[field] = num;
+  
+  if (field === 'price' && num > 0) {
+    item.found = true;
+  }
+  renderResults();
+}
+
+// ─────────────────────────────────────────────
+//  RENDER RESULTS
+// ─────────────────────────────────────────────
+function renderResults() {
+  const area = document.getElementById('results-area');
+  area.style.display = 'block';
+
+  const grid = document.getElementById('results-grid');
+  const alertsArea = document.getElementById('alerts-area');
+  const statsEl = document.getElementById('stats-bar-results');
+
+  grid.innerHTML = '';
+  alertsArea.innerHTML = '';
+  
+  if (!scData || scData.length === 0) {
+    alertsArea.innerHTML = `<div class="alert alert-warning">⚠️ Nenhum fornecedor com itens encontrado no arquivo. Verifique se o arquivo está no formato correto.</div>`;
+    statsEl.innerHTML = '';
+    return;
+  }
+
+  let totalOk = 0, totalWarn = 0, totalError = 0;
+
+  scData.forEach((supplier, idx) => {
+    const matched = matchItems(supplier.supplierName, supplier._matched || supplier.items);
+    
+    // RANKEAMENTO AUTOMÁTICO
+    matched.sort((a, b) => {
+      const aAtivo = a.qty > 0 ? 1 : 0;
+      const bAtivo = b.qty > 0 ? 1 : 0;
+      if (aAtivo !== bAtivo) return bAtivo - aAtivo;
+      return a.product.localeCompare(b.product);
+    });
+    
+    supplier._matched = matched;
+
+    const missing = matched.filter(i => !i.found);
+    const hasAll = missing.length === 0;
+    const hasNone = missing.length === matched.length;
+    const status = hasAll ? 'ok' : (hasNone ? 'error' : 'partial');
+
+    if (status === 'ok') totalOk++;
+    else if (status === 'error') totalError++;
+    else totalWarn++;
+    supplier._status = status;
+
+    const badgeClass = status === 'ok' ? 'badge-ok' : (status === 'error' ? 'badge-error' : 'badge-partial');
+    const badgeText = status === 'ok' ? '✔ Pronto' : (status === 'error' ? '✗ Pendente' : '⚠ Parcial');
+    const canDownload = status === 'ok' || status === 'partial';
+
+    const total = matched.reduce((s, i) => s + (i.found ? i.qty * i.price : 0), 0);
+
+    const rowsHtml = matched.map((item, itemIdx) => `
+      <tr>
+        <td>${esc(item.product)}</td>
+        <td>${esc(item.unit)}</td>
+        <td><input type="number" class="sc-edit-input" style="width:70px; padding:4px;" value="${item.qty}" step="0.01" onchange="updateSCItem(${idx}, ${itemIdx}, 'qty', this.value)"></td>
+        <td>
+          <div style="display:flex; align-items:center; gap:6px">
+            R$ <input type="number" class="sc-edit-input" style="width:80px; padding:4px;" value="${item.price.toFixed(2)}" step="0.01" placeholder="0.00" onchange="updateSCItem(${idx}, ${itemIdx}, 'price', this.value)">
+          </div>
+        </td>
+        <td style="font-weight:600">${item.found || item.price > 0 ? 'R$ ' + (item.qty * item.price).toFixed(2) : '<span class="missing">—</span>'}</td>
+      </tr>
+    `).join('');
+
+    const isOpen = openCards.has(idx) ? 'open' : '';
+
+    grid.innerHTML += `
+      <div class="supplier-card ${status}" id="scard-${idx}">
+        <div class="supplier-card-header" onclick="toggleCard(${idx})">
+          <div class="supplier-name">${esc(supplier.supplierName)}</div>
+          <span class="badge ${badgeClass}">${badgeText}</span>
+          <span style="color:var(--gray-400);font-size:13px">${matched.length} itens · R$ ${total.toFixed(2)}</span>
+          ${canDownload ? `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();downloadPDF(${idx})">⬇ PDF</button>` : ''}
+          <span class="chevron ${isOpen}" id="chev-${idx}">▼</span>
+        </div>
+        <div class="collapse-content supplier-card-body ${isOpen}" id="cbody-${idx}">
+          ${missing.length > 0 ? `<div class="alert alert-warning" style="margin-top:12px">⚠️ ${missing.length} produto(s) sem preço no cadastro. <strong>Insira manualmente abaixo ou cadastre na base.</strong></div>` : ''}
+          <table class="items-table">
+            <thead><tr><th>Produto</th><th>Unidade</th><th>Qtd</th><th>Preço Unit.</th><th>Total</th></tr></thead>
+            <tbody>${rowsHtml}</tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  });
+
+  statsEl.innerHTML = `
+    <div class="stat"><div class="val">${scData.length}</div><div class="lbl">Fornecedores</div></div>
+    <div class="stat"><div class="val green">${totalOk}</div><div class="lbl">Prontos</div></div>
+    <div class="stat"><div class="val orange">${totalWarn}</div><div class="lbl">Parciais</div></div>
+    <div class="stat"><div class="val red">${totalError}</div><div class="lbl">Pendentes</div></div>
+  `;
+  statsEl.className = 'stats-bar';
+
+  if (totalError > 0 || totalWarn > 0) {
+    alertsArea.innerHTML = `<div class="alert alert-info">ℹ️ <strong>Dica:</strong> Você pode editar os preços diretamente na tabela acima para liberar o fornecedor.</div>`;
+  }
+  if (totalOk === scData.length) {
+    // BOTÕES DE LOTE ADICIONADOS AQUI
+    alertsArea.innerHTML = `<div class="alert alert-success">✅ Todos os pedidos estão prontos. Você pode baixar individualmente ou exportar todos de uma vez.</div>
+      <div style="margin-top:12px; display:flex; gap:12px;">
+        <button class="btn btn-primary" onclick="downloadAllZip()">🗜️ Baixar Todos (.ZIP)</button>
+        <button class="btn btn-secondary" onclick="downloadAllPDF()">⬇ Baixar Todos PDFs Livres</button>
+      </div>`;
+  }
+}
+
+function toggleCard(idx) {
+  const body = document.getElementById('cbody-' + idx);
+  const chev = document.getElementById('chev-' + idx);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+  if (body.classList.contains('open')) openCards.add(idx);
+  else openCards.delete(idx);
+}
+
+// ─────────────────────────────────────────────
+//  PDF GENERATION & EXPORT LOGIC
+// ─────────────────────────────────────────────
+function buildPDFDocument(supplier, unitKey, ocNum) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const unitData = UNITS[unitKey];
+
+  const items = supplier._matched || [];
+  const validItems = items.filter(i => i.found && i.qty > 0);
+  const total = validItems.reduce((s, i) => s + i.qty * i.price, 0);
+
+  const pageW = 210;
+  const margin = 14;
+  const contentW = pageW - margin * 2;
+
+  const RED = [200, 16, 46];
+  const BLACK = [10, 10, 10];
+  const GRAY = [100, 100, 100];
+  const LIGHT_GRAY = [240, 240, 240];
+  const WHITE = [255, 255, 255];
+  const DARK_ROW = [248, 248, 248];
+
+  let y = 14;
+  doc.setFillColor(...RED);
+  doc.rect(0, 0, pageW, 26, 'F');
+
+  doc.setFillColor(255, 255, 255, 0.15);
+  doc.circle(margin + 8, 13, 8, 'S');
+  doc.setTextColor(...WHITE);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('SB', margin + 8, 14.5, { align: 'center' });
+
+  doc.setFontSize(14);
+  doc.text('Sushi Boulevard', margin + 20, 11);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Restaurante · Rodízio Japonês', margin + 20, 17.5);
+
+  // OC Number & title
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text('OC - Ordem de Compras', pageW - margin, 12, { align: 'right' });
+  
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  if (ocNum) {
+    doc.text(`Nº OC: ${ocNum}`, pageW - margin, 17, { align: 'right' });
+    doc.text(`Data: ${supplier.orderDate}   Entrega: ${supplier.deliveryDate}`, pageW - margin, 21, { align: 'right' });
+  } else {
+    doc.text(`Data: ${supplier.orderDate}   Entrega: ${supplier.deliveryDate}`, pageW - margin, 20, { align: 'right' });
+  }
+
+  y = 34;
+  doc.setFillColor(...LIGHT_GRAY);
+  doc.rect(margin, y, contentW, 6, 'F');
+  doc.setTextColor(...RED);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DADOS DO COMPRADOR', margin + 3, y + 4);
+
+  y += 8;
+  doc.setTextColor(...BLACK);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Razão Social:', margin + 2, y + 1);
+  doc.setFont('helvetica', 'normal');
+  doc.text(unitData.nome, margin + 30, y + 1);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Contato:', margin + 150, y + 1);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Helton Paiva', margin + 165, y + 1);
+
+  y += 5;
+  doc.setFont('helvetica', 'bold');
+  doc.text('CNPJ:', margin + 2, y + 1);
+  doc.setFont('helvetica', 'normal');
+  doc.text(unitData.cnpj, margin + 12, y + 1);
+  doc.setFont('helvetica', 'bold');
+  doc.text('I.E.:', margin + 55, y + 1);
+  doc.setFont('helvetica', 'normal');
+  doc.text(unitData.ie, margin + 63, y + 1);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Tel:', margin + 105, y + 1);
+  doc.setFont('helvetica', 'normal');
+  doc.text(unitData.tel, margin + 113, y + 1);
+
+  y += 5;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Endereço:', margin + 2, y + 1);
+  doc.setFont('helvetica', 'normal');
+  doc.text(unitData.end, margin + 18, y + 1);
+  doc.setFont('helvetica', 'bold');
+  doc.text('E-mail:', margin + 105, y + 1);
+  doc.setFont('helvetica', 'normal');
+  doc.text('suprimentos@sushiboulevard.com.br', margin + 117, y + 1);
+
+  y += 8;
+  doc.setDrawColor(...LIGHT_GRAY);
+  doc.setLineWidth(0.3);
+  doc.rect(margin, y - 24, contentW, 24);
+
+  doc.setFillColor(...LIGHT_GRAY);
+  doc.rect(margin, y, contentW, 6, 'F');
+  doc.setTextColor(...RED);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DADOS DO FORNECEDOR', margin + 3, y + 4);
+  y += 8;
+  doc.setTextColor(...BLACK);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Fornecedor:', margin + 2, y + 1);
+  doc.setFont('helvetica', 'normal');
+  doc.text(supplier.supplierName, margin + 22, y + 1);
+  if (supplier.supplierContact) {
+    doc.setFont('helvetica', 'bold');
+    doc.text('Contato:', margin + 130, y + 1);
+    doc.setFont('helvetica', 'normal');
+    doc.text(supplier.supplierContact, margin + 145, y + 1);
+  }
+
+  y += 5;
+  doc.setFont('helvetica', 'bold');
+  doc.text('Forma Pagamento:', margin + 2, y + 1);
+  doc.setFont('helvetica', 'normal');
+  doc.text(supplier.paymentForm || 'Á PRAZO', margin + 32, y + 1);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Prazo:', margin + 80, y + 1);
+  doc.setFont('helvetica', 'normal');
+  doc.text(supplier.paymentTerm || '—', margin + 90, y + 1);
+
+  doc.setLineWidth(0.3);
+  doc.setDrawColor(...LIGHT_GRAY);
+  doc.rect(margin, y - 14, contentW, 14);
+  y += 10;
+
+  const colX = [margin, margin+8, margin+74, margin+101, margin+120, margin+147, margin+170];
+  const colW = [8, 66, 27, 19, 27, 23, 12];
+  const headers = ['#', 'Produto', 'Unidade', 'Qtd.', 'Valor Unit.', 'Valor Total'];
+
+  doc.setFillColor(...RED);
+  doc.rect(margin, y, contentW, 7, 'F');
+  doc.setTextColor(...WHITE);
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  headers.forEach((h, i) => doc.text(h, colX[i] + 1.5, y + 4.8));
+  y += 7;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+
+  validItems.forEach((item, i) => {
+    const rowH = 6;
+    if (y + rowH > 270) {
+      doc.addPage();
+      y = 20;
+    }
+    if (i % 2 === 0) {
+      doc.setFillColor(...DARK_ROW);
+      doc.rect(margin, y, contentW, rowH, 'F');
+    }
+    doc.setTextColor(...BLACK);
+    doc.text(String(i+1), colX[0] + 1.5, y + 4.2);
+    doc.text(item.product, colX[1] + 1.5, y + 4.2);
+    doc.text(item.unit, colX[2] + 1.5, y + 4.2);
+    doc.text(item.qty.toFixed(3), colX[3] + 1.5, y + 4.2);
+    doc.text('R$ ' + item.price.toFixed(2), colX[4] + 1.5, y + 4.2);
+    doc.text('R$ ' + (item.qty * item.price).toFixed(2), colX[5] + 1.5, y + 4.2);
+    y += rowH;
+  });
+
+  doc.setDrawColor(...LIGHT_GRAY);
+  doc.setLineWidth(0.3);
+
+  y += 2;
+  doc.setFillColor(...RED);
+  doc.rect(pageW - margin - 46, y, 46, 8, 'F');
+  doc.setTextColor(...WHITE);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('TOTAL:', pageW - margin - 44, y + 5.5);
+  doc.text('R$ ' + total.toFixed(2), pageW - margin - 2, y + 5.5, { align: 'right' });
+  y += 14;
+
+  doc.setFillColor(...LIGHT_GRAY);
+  doc.rect(margin, y, contentW, 13, 'F');
+  doc.setTextColor(...GRAY);
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'italic');
+  doc.text('É necessário verificar CNPJ, data de pagamento, validade, quantidade e qualidade dos produtos.', margin + 3, y + 4);
+  doc.text('Obs: Os produtos devem obedecer aos critérios da RDC 216 (ANVISA). Verificar temperatura e integridade no ato do recebimento.', margin + 3, y + 7.5);
+  doc.text('Em caso de não conformidade entre a OC e os itens recebidos, informar no Grupo da Unidade.', margin + 3, y + 11);
+
+  doc.setFillColor(...RED);
+  doc.rect(0, 287, pageW, 10, 'F');
+  doc.setTextColor(...WHITE);
+  doc.setFontSize(7);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Sushi Boulevard · suprimentos@sushiboulevard.com.br · (91) 98413-7799', pageW / 2, 292, { align: 'center' });
+
+  return doc;
+}
+
+function downloadPDF(idx) {
+  const supplier = scData[idx];
+  if (!supplier) return;
+  const unitKey = document.getElementById('unit-dest').value || 'cidade_nova';
+  const ocNum = document.getElementById('oc-number').value.trim();
+  
+  const doc = buildPDFDocument(supplier, unitKey, ocNum);
+  const safeName = supplier.supplierName.replace(/[^a-zA-Z0-9\u00C0-\u024F\s]/g, '').replace(/\s+/g, '_').slice(0, 40);
+  doc.save(`OC_SB_${unitKey.toUpperCase()}_${safeName}_${supplier.orderDate.replace(/\//g,'-')}.pdf`);
+  showToast(`PDF gerado: ${supplier.supplierName}`, 'success');
+}
+
+function downloadAllPDF() {
+  scData.forEach((s, i) => {
+    if (s._status === 'ok' || s._status === 'partial') {
+      setTimeout(() => downloadPDF(i), i * 400);
+    }
+  });
+}
+
+// GERAÇÃO DE LOTE ZIP
+function downloadAllZip() {
+  const zip = new JSZip();
+  const unitKey = document.getElementById('unit-dest').value || 'cidade_nova';
+  const ocNum = document.getElementById('oc-number').value.trim();
+  let count = 0;
+  
+  scData.forEach((supplier) => {
+    if (supplier._status === 'ok' || supplier._status === 'partial') {
+      const doc = buildPDFDocument(supplier, unitKey, ocNum);
+      const safeName = supplier.supplierName.replace(/[^a-zA-Z0-9\u00C0-\u024F\s]/g, '').replace(/\s+/g, '_').slice(0, 40);
+      const fileName = `OC_SB_${unitKey.toUpperCase()}_${safeName}_${supplier.orderDate.replace(/\//g,'-')}.pdf`;
+      zip.file(fileName, doc.output('blob'));
+      count++;
+    }
+  });
+
+  if(count === 0) {
+    showToast('Nenhum fornecedor com itens válidos para exportar.', 'error');
+    return;
+  }
+
+  const defaultName = `OCs_SushiBoulevard_${today().replace(/\//g,'-')}`;
+  const zipName = prompt("Digite o nome do arquivo ZIP para exportar os PDFs:", defaultName);
+  
+  if (zipName === null) return; // Cancela se o usuário fechar o prompt
+
+  showToast('Gerando arquivo ZIP, aguarde...', 'info');
+  
+  zip.generateAsync({type:"blob"}).then(function(content) {
+      const url = window.URL.createObjectURL(content);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = (zipName || defaultName) + ".zip";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      showToast('ZIP gerado com sucesso!', 'success');
+  });
+}
+
+// ─────────────────────────────────────────────
+//  UTILS
+// ─────────────────────────────────────────────
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+updateSupplierList();
+renderCatalog();
+</script>
+</body>
+</html>
