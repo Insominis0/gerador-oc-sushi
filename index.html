@@ -4,11 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Gerador de Ordens de Compra</title>
+  <title>Gerador de Ordens de Compra - Sushi Boulevard</title>
   <link rel="icon" type="image/png" href="logosb.png">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
   <style>
@@ -16,20 +17,10 @@
       --black: #0a0a0a;
       --orange: #F36F1D;
       --orange-dark: #9e0c24;
-      --orange-light: #f5e6e9;
       --white: #fafafa;
       --gray-100: #f2f2f2;
       --gray-200: #e0e0e0;
       --gray-400: #9e9e9e;
-      --gray-600: #616161;
-      --gold: #b8960c;
-      --gold-light: #f9f3dc;
-      --success: #1b5e20;
-      --success-bg: #e8f5e9;
-      --warning: #e65100;
-      --warning-bg: #fff3e0;
-      --error: #b71c1c;
-      --error-bg: #ffebee;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -56,24 +47,11 @@
     }
 
     .logo-area { display: flex; align-items: center; gap: 16px; }
-
-    .logo-icon {
-      width: 44px; height: 44px;
-      background: var(--orange);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px; font-weight: 900; font-family: serif; color: white;
-    }
-
     .logo-text { font-family: serif; font-size: 18px; font-weight: 700; color: white; line-height: 1.2; }
     .logo-sub { font-size: 10px; font-weight: 400; color: var(--gray-400); letter-spacing: 2px; text-transform: uppercase; }
 
     nav { display: flex; gap: 4px; }
-    .nav-btn {
-      background: transparent; border: 1px solid transparent; color: var(--gray-400);
-      padding: 8px 18px; border-radius: 6px; font-family: sans-serif; font-size: 13px; font-weight: 500;
-      cursor: pointer; transition: all .2s; letter-spacing: .3px;
-    }
+    .nav-btn { background: transparent; border: 1px solid transparent; color: var(--gray-400); padding: 8px 18px; border-radius: 6px; font-family: sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .2s; }
     .nav-btn:hover { color: white; border-color: #333; }
     .nav-btn.active { color: white; background: #1a1a1a; border-color: #333; }
 
@@ -81,7 +59,7 @@
 
     .screen { display: none; animation: fadeIn .3s ease; }
     .screen.active { display: block; }
-    @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform:none; } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
     .home-hero { text-align: center; padding: 60px 0 48px; }
     .home-hero h1 { font-family: serif; font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 900; line-height: 1.15; margin-bottom: 16px; }
@@ -96,16 +74,16 @@
     .card-icon { width: 52px; height: 52px; background: #1a1a1a; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 22px; }
     .home-card h3 { font-family: serif; font-size: 17px; font-weight: 700; margin-bottom: 8px; color: white; }
     .home-card p { font-size: 13px; color: var(--gray-400); line-height: 1.6; }
-    .card-arrow { position: absolute; bottom: 20px; right: 20px; font-size: 20px; color: var(--orange); opacity: 0; transition: all .25s; }
-    .home-card:hover .card-arrow { opacity: 1; transform: translate(2px, -2px); }
-
+    
     .section-header { margin-bottom: 36px; display: flex; align-items: center; gap: 16px; }
-    .section-header .back-btn { background: #1a1a1a; border: 1px solid #2a2a2a; color: var(--gray-400); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-family: sans-serif; display: flex; align-items: center; gap: 6px; transition: all .2s; white-space: nowrap; }
+    .section-header .back-btn { background: #1a1a1a; border: 1px solid #2a2a2a; color: var(--gray-400); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-family: sans-serif; }
     .section-header .back-btn:hover { border-color: #444; color: white; }
     .section-header-text h2 { font-family: serif; font-size: 1.8rem; font-weight: 700; }
     .section-header-text p { font-size: 13px; color: var(--gray-400); margin-top: 4px; }
 
-    /* ── UPLOAD ZONE ── */
+    .editor-panel { background: #0d0d0d; border: 1.5px solid #F36F1D40; border-radius: 12px; padding: 24px; margin-bottom: 32px; }
+    .editor-grid { display: grid; grid-template-columns: 2fr 1fr auto; gap: 16px; margin-bottom: 16px; align-items: end;}
+
     .upload-zone { border: 2px dashed #2a2a2a; border-radius: 16px; padding: 64px 40px; text-align: center; cursor: pointer; transition: all .25s; background: #0d0d0d; position: relative; }
     .upload-zone:hover, .upload-zone.dragover { border-color: var(--orange); background: #130508; }
     .upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
@@ -115,128 +93,89 @@
 
     .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 8px; font-family: sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; letter-spacing: .2px; }
     .btn-primary { background: var(--orange); color: white; }
-    .btn-primary:hover { background: var(--orange-dark); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(200,16,46,.3); }
+    .btn-primary:hover { background: var(--orange-dark); transform: translateY(-1px); }
     .btn-secondary { background: #1a1a1a; color: var(--gray-400); border: 1px solid #2a2a2a; }
     .btn-secondary:hover { border-color: #444; color: white; }
-    .btn-outline { background: transparent; color: var(--orange); border: 1.5px solid var(--orange); }
-    .btn-outline:hover { background: var(--orange); color: white; }
     .btn-sm { padding: 8px 16px; font-size: 12px; }
+
+    .form-field label { display: block; font-size: 11px; font-weight: 600; color: var(--gray-400); margin-bottom: 6px; letter-spacing: .5px; text-transform: uppercase; }
+    .form-field input, .form-field select { width: 100%; background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 12px; color: white; font-family: sans-serif; font-size: 13px; outline: none; transition: border-color .2s; }
+    .form-field input:focus, .form-field select:focus { border-color: var(--orange); }
 
     .file-preview { background: #111; border: 1px solid #222; border-radius: 12px; padding: 20px 24px; display: flex; align-items: center; gap: 16px; margin-top: 20px; }
     .file-icon { font-size: 28px; }
     .file-info { flex: 1; }
     .file-info strong { font-size: 14px; display: block; }
-    .file-info span { font-size: 12px; color: var(--gray-400); }
 
     .alert { padding: 14px 18px; border-radius: 10px; font-size: 13px; margin-bottom: 12px; display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
     .alert-success { background: #0d2010; border: 1px solid #1a4023; color: #5dbf6e; }
-    .alert-warning { background: #1f1200; border: 1px solid #3d2800; color: #ffb74d; }
-    .alert-error { background: #1a0505; border: 1px solid #3b0d0d; color: #ef9a9a; }
-    .alert-info { background: #0a0f1a; border: 1px solid #1a2540; color: #82b1ff; }
 
     .results-grid { display: grid; gap: 14px; }
     .supplier-card { background: #0f0f0f; border: 1px solid #1e1e1e; border-radius: 14px; overflow: hidden; transition: border-color .2s; }
-    .supplier-card.ok { border-left: 3px solid #2e7d32; }
-    .supplier-card.error { border-left: 3px solid #c62828; }
-    .supplier-card.partial { border-left: 3px solid #e65100; }
+    .supplier-card.ok { border-left: 4px solid #2e7d32; }
+    .supplier-card.partial { border-left: 4px solid #e65100; }
     .supplier-card-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; user-select: none; }
     .supplier-card-header:hover { background: #141414; }
     .supplier-name { font-weight: 600; font-size: 15px; flex: 1; }
     
-    .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; white-space: nowrap; }
-    .badge-ok { background: #1b5e2020; color: #66bb6a; border: 1px solid #2e7d3240; }
-    .badge-error { background: #b71c1c20; color: #ef9a9a; border: 1px solid #c6282840; }
-    .badge-partial { background: #e6510020; color: #ffb74d; border: 1px solid #e6510040; }
-
     .supplier-card-body { padding: 0 20px 16px; border-top: 1px solid #1e1e1e; }
-    .items-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 12px; }
-    .items-table th { text-align: left; font-weight: 600; color: var(--gray-400); padding: 6px 8px; border-bottom: 1px solid #222; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; }
-    .items-table td { padding: 7px 8px; border-bottom: 1px solid #1a1a1a; color: #ccc; vertical-align: middle; }
-    .items-table tr:last-child td { border-bottom: none; }
-    .items-table td.missing { color: #ef9a9a; font-style: italic; font-size: 11px; }
+    .supplier-config-grid { background: #151515; border: 1px solid #2a2a2a; border-radius: 8px; padding: 16px; margin-top: 16px; margin-bottom: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
 
-    input.sc-edit-input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 6px 10px; border-radius: 4px; width: 100%; outline: none; transition: border-color .2s; font-size: 13px; font-family: sans-serif; }
+    .items-table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-top: 12px; }
+    .items-table th { text-align: left; font-weight: 600; color: var(--gray-400); padding: 6px 8px; border-bottom: 1px solid #222; font-size: 11px; text-transform: uppercase; }
+    .items-table td { padding: 7px 8px; border-bottom: 1px solid #1a1a1a; color: #ccc; vertical-align: middle; }
+    
+    input.sc-edit-input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 6px 10px; border-radius: 4px; width: 100%; outline: none; }
     input.sc-edit-input:focus { border-color: var(--orange); }
 
     .catalog-toolbar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-    .search-input { flex: 1; min-width: 200px; background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 16px; color: white; font-family: sans-serif; font-size: 13px; outline: none; transition: border-color .2s; }
-    .search-input:focus { border-color: var(--orange); }
+    .search-input { flex: 1; min-width: 200px; background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 16px; color: white; }
     select.search-input { cursor: pointer; min-width: 180px; flex: unset; }
 
     .catalog-table-wrap { background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 12px; overflow: hidden; }
     .catalog-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .catalog-table th { background: #111; padding: 12px 16px; text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .8px; text-transform: uppercase; color: var(--gray-400); border-bottom: 1px solid #1e1e1e; position: sticky; top: 72px; }
-    .catalog-table td { padding: 11px 16px; border-bottom: 1px solid #151515; color: #ccc; vertical-align: middle; }
+    .catalog-table th { background: #111; padding: 12px 16px; text-align: left; font-size: 11px; color: var(--gray-400); border-bottom: 1px solid #1e1e1e; }
+    .catalog-table td { padding: 11px 16px; border-bottom: 1px solid #151515; color: #ccc; }
     .catalog-table tbody tr:hover td { background: #111; }
-    .catalog-table tbody tr:last-child td { border-bottom: none; }
-
-    input.cell-edit { background: transparent; border: none; border-bottom: 1px dashed #333; color: white; font-family: sans-serif; font-size: 13px; width: 100%; outline: none; padding: 2px 0; transition: border-color .2s; }
+    input.cell-edit { background: transparent; border: none; border-bottom: 1px dashed #333; color: white; width: 100%; outline: none; padding: 2px 0; }
     input.cell-edit:focus { border-bottom-color: var(--orange); }
-    .del-btn { background: transparent; border: none; color: #555; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; transition: color .2s; }
+
+    .del-btn { background: transparent; border: none; color: #555; cursor: pointer; font-size: 16px; padding: 4px; }
     .del-btn:hover { color: var(--orange); }
 
     .add-form { background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-    .add-form h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; color: var(--gray-400); letter-spacing: .5px; text-transform: uppercase; }
     .form-row { display: grid; grid-template-columns: 2fr 2fr 1fr 1fr auto; gap: 10px; align-items: end; }
-    .form-field label { display: block; font-size: 11px; font-weight: 600; color: var(--gray-400); margin-bottom: 6px; letter-spacing: .5px; text-transform: uppercase; }
-    .form-field input, .form-field select { width: 100%; background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 10px 12px; color: white; font-family: sans-serif; font-size: 13px; outline: none; transition: border-color .2s; }
-    .form-field input:focus, .form-field select:focus { border-color: var(--orange); }
-
     .empty-state { text-align: center; padding: 60px 20px; color: var(--gray-400); }
-    .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
-    .empty-state p { font-size: 14px; }
 
     .stats-bar { display: flex; gap: 20px; background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 12px; padding: 16px 24px; margin-bottom: 24px; flex-wrap: wrap; }
     .stat { text-align: center; flex: 1; min-width: 80px; }
     .stat .val { font-size: 22px; font-weight: 700; font-family: serif; }
-    .stat .lbl { font-size: 11px; color: var(--gray-400); text-transform: uppercase; letter-spacing: .5px; margin-top: 2px; }
-    .stat .val.red { color: var(--orange); }
-    .stat .val.green { color: #66bb6a; }
-    .stat .val.orange { color: #ffb74d; }
+    .stat .lbl { font-size: 11px; color: var(--gray-400); margin-top: 2px; }
 
     .divider { height: 1px; background: #1a1a1a; margin: 32px 0; }
 
-    #toast { position: fixed; bottom: 30px; right: 30px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 14px 20px; font-size: 13px; color: white; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all .3s; max-width: 320px; box-shadow: 0 8px 32px rgba(0,0,0,.5); pointer-events: none; }
+    #toast { position: fixed; bottom: 30px; right: 30px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 14px 20px; font-size: 13px; color: white; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all .3s; }
     #toast.show { opacity: 1; transform: none; }
     #toast.success { border-left: 3px solid #66bb6a; }
     #toast.error { border-left: 3px solid var(--orange); }
 
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0a0a0a; }
-    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #444; }
-
     .collapse-content { display: none; }
     .collapse-content.open { display: block; }
-    .chevron { transition: transform .2s; display: inline-block; }
-    .chevron.open { transform: rotate(180deg); }
-
-    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.3); border-top-color: white; border-radius: 50%; animation: spin .6s linear infinite; vertical-align: middle; margin-right: 8px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    @media (max-width: 700px) {
-      header { padding: 0 16px; }
-      main { padding: 24px 16px; }
-      .home-cards { grid-template-columns: 1fr; }
-      .form-row { grid-template-columns: 1fr 1fr; }
-    }
   </style>
 </head>
 <body>
 
 <header>
   <div class="logo-area">
-    <img src="logosb.png" alt="Logo" class="logo-img" width="65">
-
+    <div style="width: 40px; height: 40px; background-color: #F15A24; border-radius: 50%; color: #fff; text-align: center; line-height: 40px; font-weight: bold; font-size: 14px; border: 2px solid #fff;">SB</div>
     <div>
       <div class="logo-text">Gerador de Pedidonator</div>
       <div class="logo-sub">Do Felipe</div>
     </div>
   </div>
-
   <nav>
     <button class="nav-btn active" onclick="goHome()">Início</button>
-    <button class="nav-btn" onclick="goScreen('catalog')">Cadastro</button>
+    <button class="nav-btn" onclick="goScreen('catalog')">Cadastro de Preços</button>
     <button class="nav-btn" onclick="goScreen('import')">Importar OC</button>
   </nav>
 </header>
@@ -246,20 +185,18 @@
   <div id="screen-home" class="screen active">
     <div class="home-hero">
       <h1>Gerador de <span>Ordens de Compra</span></h1>
-      <p>Helton, os botões são autoexplicativos, mas pra deixar claro, o de importação é pra importar e o de cadastro é pra cadastrar, as descrições estão nos botões BTW.</p>
+      <p>O sistema foi atualizado para gerar a tabela automaticamente sem cortar, aceitar seu <strong>Cabeçalho Oficial</strong> com as proporções e contrastes perfeitos.</p>
     </div>
     <div class="home-cards">
       <div class="home-card" onclick="goScreen('import')">
         <div class="card-icon">📥</div>
         <h3>Importar Solicitação de Compra</h3>
-        <p>Carregue o arquivo Excel da equipe operacional e gere as Ordens de Compra em PDF, por fornecedor.</p>
-        <div class="card-arrow">↗</div>
+        <p>Carregue o arquivo Excel da equipe operacional e gere as Ordens de Compra em PDF.</p>
       </div>
       <div class="home-card" onclick="goScreen('catalog')">
         <div class="card-icon">🗂️</div>
         <h3>Cadastro de Produtos e Preços</h3>
-        <p>Gerencie a base de dados de produtos, unidades e preços por fornecedor. Importe, edite e exporte facilmente.<img src="EMOJI.png" alt="logo" style="width:30px; vertical-align: middle;"></p>
-        <div class="card-arrow">↗</div>
+        <p>Gerencie a base de dados de produtos, unidades e preços por fornecedor.</p>
       </div>
     </div>
   </div>
@@ -269,12 +206,13 @@
       <button class="back-btn" onclick="goHome()">← Voltar</button>
       <div class="section-header-text">
         <h2>Importar Solicitação de Compra</h2>
-        <p>Selecione a unidade e carregue o arquivo Excel gerado pela equipe operacional</p>
+        <p>Selecione a unidade base, carregue o cabeçalho e envie a planilha</p>
       </div>
     </div>
 
-    <div class="add-form" style="margin-bottom: 24px;">
-      <div class="form-row" style="grid-template-columns: 2fr 1fr; gap: 20px;">
+    <div class="editor-panel" style="padding: 16px 24px;">
+      <h3 style="font-size: 14px; margin-bottom: 16px; color: var(--orange);">⚙️ Configurações Gerais do Processo</h3>
+      <div class="editor-grid">
         <div class="form-field">
           <label>Unidade de Destino</label>
           <select id="unit-dest">
@@ -285,18 +223,23 @@
           </select>
         </div>
         <div class="form-field">
-          <label>Número da OC (Opcional)</label>
-          <input type="text" id="oc-number" placeholder="Ex: 20260429-01">
+          <label>Número da OC Inicial (Opcional)</label>
+          <input type="text" id="oc-number" placeholder="Ex: 534">
+        </div>
+        
+        <div class="form-field">
+          <label id="header-status" style="color:#ffb74d">⚠️ Cabeçalho Não Carregado</label>
+          <button class="btn btn-secondary btn-sm" style="height: 38px;" onclick="document.getElementById('header-upload').click()">🖼️ Subir Imagem de Cabeçalho (.png)</button>
+          <input type="file" id="header-upload" accept=".jpg,.jpeg,.png" style="display:none" onchange="handleHeaderUpload(this)">
         </div>
       </div>
     </div>
 
     <div id="upload-area">
       <div class="upload-zone" id="drop-zone">
-        <input type="file" id="sc-file" accept=".xlsx,.xlsm" onchange="handleSCFile(this)">
+        <input type="file" id="sc-file" accept=".xlsx,.xlsm,.csv" onchange="handleSCFile(this)">
         <div class="upload-icon">📊</div>
-        <h3>Arraste o arquivo ou clique para selecionar</h3>
-        <p>Formatos aceitos: .xlsx · .xlsm</p>
+        <h3>Arraste o arquivo Excel da OC ou clique para selecionar</h3>
       </div>
 
       <div id="file-preview" style="display:none">
@@ -304,13 +247,10 @@
           <div class="file-icon">📄</div>
           <div class="file-info">
             <strong id="fp-name">—</strong>
-            <span id="fp-size">—</span>
           </div>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-primary" id="btn-generate" onclick="processSC()">
-              ⚡ Gerar Pedido de Compra
-            </button>
-            <button class="btn btn-secondary btn-sm" onclick="resetImport()">✕ Alterar arquivo</button>
+            <button class="btn btn-primary" id="btn-generate" onclick="processSC()">⚡ Ler Planilha</button>
+            <button class="btn btn-secondary btn-sm" onclick="resetImport()">✕ Alterar</button>
           </div>
         </div>
       </div>
@@ -318,7 +258,6 @@
 
     <div id="results-area" style="display:none; margin-top:32px;">
       <div class="divider"></div>
-      <div id="stats-bar-results"></div>
       <div id="alerts-area"></div>
       <div id="results-grid" class="results-grid" style="margin-top:20px;"></div>
     </div>
@@ -329,29 +268,28 @@
       <button class="back-btn" onclick="goHome()">← Voltar</button>
       <div class="section-header-text">
         <h2>Cadastro de Produtos e Preços</h2>
-        <p>Base de dados utilizada para gerar as Ordens de Compra</p>
       </div>
     </div>
 
     <div class="add-form">
-      <h3>+ Adicionar produto</h3>
+      <h3>+ Adicionar produto manualmente</h3>
       <div class="form-row">
         <div class="form-field">
           <label>Fornecedor</label>
-          <input type="text" id="new-supplier" placeholder="Nome do fornecedor" list="supplier-list" autocomplete="off">
+          <input type="text" id="new-supplier" list="supplier-list">
           <datalist id="supplier-list"></datalist>
         </div>
         <div class="form-field">
           <label>Produto</label>
-          <input type="text" id="new-product" placeholder="Descrição do produto">
+          <input type="text" id="new-product">
         </div>
         <div class="form-field">
           <label>Unidade</label>
-          <input type="text" id="new-unit" placeholder="KG, MÇ, UN...">
+          <input type="text" id="new-unit">
         </div>
         <div class="form-field">
           <label>Preço (R$)</label>
-          <input type="number" id="new-price" placeholder="0,00" step="0.01" min="0">
+          <input type="number" id="new-price" step="0.01">
         </div>
         <div class="form-field">
           <label>&nbsp;</label>
@@ -361,14 +299,12 @@
     </div>
 
     <div class="catalog-toolbar">
-      <input type="text" class="search-input" id="cat-search" placeholder="🔍  Buscar produto ou fornecedor..." oninput="renderCatalog()">
+      <input type="text" class="search-input" id="cat-search" placeholder="🔍 Buscar Produto ou Fornecedor..." oninput="renderCatalog()">
       <select class="search-input" id="cat-supplier-filter" onchange="renderCatalog()">
         <option value="">Todos os fornecedores</option>
       </select>
-      <button class="btn btn-secondary btn-sm" onclick="importCatalogExcel()">📤 Importar Excel</button>
+      <button class="btn btn-secondary btn-sm" onclick="importCatalogExcel()">📤 Importar Excel em Lote</button>
       <input type="file" id="cat-import-file" accept=".xlsx,.xlsm" style="display:none" onchange="handleCatalogImport(this)">
-      <button class="btn btn-outline btn-sm" onclick="exportCatalog()">⬇ Exportar</button>
-      <button class="btn btn-outline btn-sm" style="color: #ef9a9a; border-color: #ef9a9a; margin-left: auto;" onclick="clearCatalog()">🗑️ Limpar Tudo</button>
     </div>
 
     <div id="catalog-stats" class="stats-bar" style="display:none"></div>
@@ -381,13 +317,11 @@
             <th>Fornecedor</th>
             <th>Produto</th>
             <th>Unidade</th>
-            <th>Preço Unit. (R$)</th>
-            <th style="width:40px"></th>
+            <th>Preço Unit.</th>
+            <th></th>
           </tr>
         </thead>
-        <tbody id="catalog-body">
-          <tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🗃️</div><p>Nenhum produto cadastrado.<br>Adicione produtos acima ou importe um arquivo Excel.</p></div></td></tr>
-        </tbody>
+        <tbody id="catalog-body"></tbody>
       </table>
     </div>
   </div>
@@ -397,91 +331,93 @@
 <div id="toast"></div>
 
 <script>
-// ─────────────────────────────────────────────
-//  STATE & DATA
-// ─────────────────────────────────────────────
-let catalog = JSON.parse(localStorage.getItem('sb_catalog') || '[]');
+// ============================================================================
+// 1. VARIÁVEIS DE ESTADO GLOBAIS E CABEÇALHO DA IMAGEM
+// ============================================================================
+let catalog = JSON.parse(localStorage.getItem('sb_catalog_v3') || '[]');
 let scData = null;
 let scFile = null;
-
-// Controle de Accordions Abertos na SC para re-renderização suave
 let openCards = new Set(); 
+let headerImgBase64 = null; 
 
-// Novas Unidades Atualizadas
+window.addEventListener('load', () => {
+  try {
+    const savedHeader = localStorage.getItem('sb_header_img');
+    if (savedHeader) {
+      headerImgBase64 = savedHeader;
+      const statusLbl = document.getElementById('header-status');
+      if(statusLbl) {
+         statusLbl.innerHTML = '✅ Cabeçalho Carregado';
+         statusLbl.style.color = '#66bb6a';
+      }
+    }
+  } catch (e) {
+    console.warn("Erro ao buscar cabeçalho salvo.");
+  }
+});
+
+function handleHeaderUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    headerImgBase64 = e.target.result;
+    try {
+      localStorage.setItem('sb_header_img', headerImgBase64);
+      showToast('Cabeçalho salvo na memória do navegador!', 'success');
+    } catch(err) {
+      showToast('Imagem carregada apenas temporariamente (arquivo muito grande).', 'info');
+    }
+    const statusLbl = document.getElementById('header-status');
+    if(statusLbl) {
+       statusLbl.innerHTML = '✅ Cabeçalho Carregado';
+       statusLbl.style.color = '#66bb6a';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// ============================================================================
+// 2. BANCOS DE DADOS FIXOS
+// ============================================================================
 const UNITS = {
-  cidade_nova: { nome: "Sushi Boulevard Delivery Unidade Cidade Nova Ltda", cnpj: "40.486.493/0001-36", ie: "535171144113", end: "Tv. WE 44, nº 1, Cidade Nova 4, Belém/PA", tel: "(91) 98413-7799" },
-  delivery_umarizal: { nome: "Sushi Boulevard Delivery Ltda", cnpj: "23.994.886/0002-12", ie: "156587319", end: "Tv. Dom Romualdo de Seixas, nº 425, Belém/PA", tel: "(91) 98413-7799" },
+  cidade_nova: { nome: "Sushi Boulevard Restaurante Unidade Cidade Nova Ltda", cnpj: "40.486.493/0001-36", ie: "535171144113", end: "Tv. WE 44, nº 1, Cidade Nova 4, Belém/PA", tel: "(91) 98413-7799" },
+  delivery_umarizal: { nome: "Sushi Boulevard Delivery Ltda", cnpj: "23.994.886/0002-12", ie: "156587319", end: "Tv. Dom Romualdo de Seixas, nº 425", tel: "(91) 98413-7799" },
   duque: { nome: "Sushi Boulevard Restaurante Unidade Duque de Caxias Ltda", cnpj: "27.655.907/0001-45", ie: "155619934", end: "Av. Duque de Caxias, nº 510, Belém/PA", tel: "(91) 98413-7799" },
   senador_lemos: { nome: "Sushi Boulevard Restaurante Ltda", cnpj: "23.994.886/0001-31", ie: "155118900", end: "Av. Senador Lemos, nº 356, Belém/PA", tel: "(91) 98413-7799" }
 };
 
-// Base de Dados de Fornecedores extraída do CSV
 const FORNECEDORES_DB = [
   { chave: "Beltubo", razao: "Beltubo Materiais Hidráulicos", contato: "Leno", tel: "(91) 98893-1401", cnpj: "34.891.754/0001-09", ie: "151541302", end: "Av. Pedro Miranda, nº2566", cidade: "Belém/PA", email: "leno@beltubo.com.br" },
   { chave: "Bom_Peixe", razao: "Bom Peixe", contato: "Valdir Spironello", tel: "19991910981", cnpj: "535171144113", ie: "535171144113", end: "Rua João Franco de Oliveira, nº 1051", cidade: "Piracicaba/SP", email: "valdir.spironello@bompeixe.com.br" },
-  { chave: "Braspel", razao: "Braspel Embalagens (Roca Equipamentos)", contato: "Leonardo Farias", tel: "11978014443", cnpj: "Não Informado", ie: "Não Informado", end: "Av. Dos Latinos, n85", cidade: "São Paulo/SP", email: "vendas2@braspelembalagens.com.br" },
-  { chave: "Croi", razao: "Croi Computadores", contato: "Selma", tel: "(91) 98301-7800", cnpj: "08.632.253/0002-70", ie: "Não Informado", end: "Rua Oliveira Belo, nº73", cidade: "Belém/PA", email: "one_selma@hotmail.com" },
+  { chave: "Braspel_Embalagens", razao: "Braspel Embalagens (Roca Equipamentos Ltda.)", contato: "Leonardo Farias", tel: "11978014443", cnpj: "Não Informado", ie: "Não Informado", end: "Av. Dos Latinos, n85", cidade: "São Paulo/SP", email: "vendas2@braspelembalagens.com.br" },
+  { chave: "Croi Computadores", razao: "Croi Computadores", contato: "Selma", tel: "(91) 98301-7800", cnpj: "08.632.253/0002-70", ie: "Não Informado", end: "Tv. Quintino Bocaiúva", cidade: "Belém/PA", email: "" },
   { chave: "Damm", razao: "Damm Produtos Alimentícios", contato: "Kleber", tel: "11954724536", cnpj: "492075637115", ie: "492075637115", end: "Rua Amador Bueno, nº 294", cidade: "Osasco/SP", email: "vendas02@damm.com.br" },
-  { chave: "Dismoza", razao: "Dismoza Tintas Eireli", contato: "Nathan", tel: "91992798595", cnpj: "27.878.827/0001-59", ie: "15600183940", end: "Av. Duque de Caxias nº500", cidade: "Belém/PA", email: "dmzmarco@dismonzatintas.com.br" },
+  { chave: "Dismoza", razao: "Dismoza Tintas Eireli", contato: "Vendedor", tel: "(91) 3218-4900", cnpj: "05.420.250/0001-06", ie: "152341510", end: "Av. Conselheiro Furtado", cidade: "Belém/PA", email: "" },
   { chave: "Distribem", razao: "Distribem", contato: "Fernanda Guedes", tel: "(91) 98191-4769", cnpj: "27.190.790/0001-71", ie: "155544870", end: "Rua das Mercês, nº31", cidade: "Belém/PA", email: "distribemcontato@gmail.com" },
-  { chave: "Eletro Transol", razao: "Eletro Transol", contato: "Lea Alcantara", tel: "(91) 3204-7700", cnpj: "10.489.368/0001-19", ie: "Não Informado", end: "Av. Dr. Freitas, nº101", cidade: "Belém/PA", email: "lea@eletrotransol.com.br" },
-  { chave: "Fluxo", razao: "Fluxo Gráfica", contato: "Loureço", tel: "91999892216", cnpj: "152450459", ie: "152450459", end: "Rua Gaspar Viana, nº1310", cidade: "Belém/PA", email: "augusto@fluxografica.com.br" },
   { chave: "Frescatto", razao: "Frescatto", contato: "Fernanda Emidio", tel: "11961514107", cnpj: "148008085113", ie: "148008085113", end: "Av. Cardial Santiago Luiz Copelo, nº417", cidade: "São Paulo/SP", email: "fernanda.emidio@frescatto.com" },
-  { chave: "Frigelar", razao: "Frigelar Comércio e Industria Ltda", contato: "Thyago Augusto", tel: "(91) 98521-6361", cnpj: "92.660.406/0037-20", ie: "155374532", end: "Av. Almirante Barroso, nº280", cidade: "Belém/PA", email: "thyagosilva@frigelar.com.br" },
   { chave: "Komdelli", razao: "Komdelli", contato: "Katyusse Barros", tel: "91981778192", cnpj: "255712006", ie: "255712006", end: "Rua Euclides Francisco Peixoto, nº689", cidade: "Tijucas/SC", email: "katyusse@jkrepresentacoesltda.com.br" },
-  { chave: "L3M", razao: "L3M Artefatos Madeiras Eireli ME", contato: "Roberto Mendes", tel: "Não Informado", cnpj: "29.209.598/0001-05", ie: "177404871111", end: "Rua Duque de Caxias, nº1506", cidade: "Araçatuba/SP", email: "betomendesonline@gmail.com" },
-  { chave: "Luís do Camarão", razao: "D. E. F. Tamiarana Pescados", contato: "Luís", tel: "85991175150", cnpj: "62525778", ie: "62525778", end: "Av. Paisagística, nº110", cidade: "Fortaleza/CE", email: "contato.luisdocamarao@gmail.com" },
   { chave: "Marcomar", razao: "Marcomar", contato: "Nelson Araújo", tel: "11985593951", cnpj: "149610569110", ie: "149610569110", end: "Rua Felix Guilhem, nº1020", cidade: "São Paulo/SP", email: "nelson.araujo@marcomar.com.br" },
-  { chave: "Norte", razao: "Norte Refrigeração", contato: "Nazaré", tel: "(91) 98306-4424", cnpj: "Não Informado", ie: "Não Informado", end: "Não Informado", cidade: "Belém/PA", email: "nazare@norterefrigeracao.com.br" },
   { chave: "Taichi", razao: "Taichi", contato: "Ivan", tel: "11993679433", cnpj: "147628266113", ie: "147628266113", end: "Rua Jeronimo de Albuquerque, nº11", cidade: "São Paulo/SP", email: "contato@taichialimentos.com.br" },
-  { chave: "Vertical LOC", razao: "Vertical LOC", contato: "Andreia", tel: "Não Informado", cnpj: "Não Informado", ie: "Não Informado", end: "Rua São Miguel, nº650", cidade: "Belém/PA", email: "comercial@verticalloc.com.br" },
   { chave: "Mar Azul", razao: "Gemaque Comércio de Pescados", contato: "Alan Santos", tel: "91984767363", cnpj: "10816264000171", ie: "Não Informado", end: "Pass. Santo Antônio, nº40", cidade: "Belém/PA", email: "gemaquecomercial@hotmail.com" },
-  { chave: "AV09", razao: "AV09 COMERCIO EXTERIOR LTDA", contato: "Carlos", tel: "(47) 3367-9009", cnpj: "10.422.938/0001-53", ie: "255729421", end: "Rua 1822, nº400", cidade: "Balneário Comboriu/SC", email: "contato@av09.com.br" },
-  { chave: "Imperium", razao: "IMPERIUM PESCADOS BRASIL", contato: "Raimundo Jr", tel: "(85) 9922-1111", cnpj: "42.950.862/0001-25", ie: "07.007.450-0", end: "R Virgilio Paes, 2483", cidade: "Fortaleza/CE", email: "administrativo@imperiumpesca" },
-  { chave: "CELM", razao: "CELM AQUICULTURA S.A.", contato: "Gleidson Maris", tel: "(88) 99656-7111", cnpj: "04.506.123/0001-31", ie: "63186489", end: "Fazenda Ilha dos Veados", cidade: "Aracati/CE", email: "Não Informado" },
-  { chave: "PENSE PACK", razao: "PENSE PACK COM. SERV. LTDA", contato: "Caique Lima", tel: "(71)4105-8583", cnpj: "29.663.761/0001-05", ie: "146543548", end: "Rua Alceu Amoroso Lima, 786", cidade: "Salvador/BA", email: "adm1.pensepack@gmail.com" },
-  { chave: "KROLOW", razao: "KROLOW & CIA", contato: "Andrea", tel: "(11) 98231-0036", cnpj: "92 190 701/0001-59", ie: "930068491", end: "Rua Santos Dumont, 664", cidade: "Pelotas/RS", email: "yanagi@terra.com.br" },
-  { chave: "CEASINHA", razao: "C S HORTIFRUTI COMERCIO LTDA", contato: "Samantha", tel: "(91) 98437-6512", cnpj: "36.697.355/0001-29", ie: "156860007", end: "Estrada da Ceasa", cidade: "Belém/PA", email: "" },
-  { chave: "BP DISTRIBUIDORA", razao: "BP DISTRIBUIDORA DE HIGIENE", contato: "Antenor", tel: "(91) 98318-1122", cnpj: "10.431.490/0001-34", ie: "152790438", end: "Rod Transcoqueiro, 156", cidade: "Ananindeua/PA", email: "" },
-  { chave: "AMBEV", razao: "CRBS SA AMBEV", contato: "Eduardo", tel: "(91) 98448-7252", cnpj: "56.228.356/0110-95", ie: "153572558", end: "Rua Uriboca. 1620", cidade: "Marituba", email: "" },
-  { chave: "Amasa", razao: "AMAZÔNIA INDÚSTRIA ALIMENTÍCIA AS", contato: "Comercial", tel: "(91) 99341-3251", cnpj: "05.574.041/0001-05", ie: "150856423", end: "Rod Arthur Bernarde, 7903", cidade: "Belém/PA", email: "amasa@amasa.com.br" },
-  { chave: "SOLAR", razao: "COMPANHIA PARAENSE DE REFRIGERANTES", contato: "Leonardo", tel: "(91) 98484-2466", cnpj: "04.928.297/0001-00", ie: "150509251", end: "Rod Augusto Montenegro, KM 7", cidade: "Belém/PA", email: "" },
-  { chave: "M&N", razao: "M E N Comércio de Pescados LTDA", contato: "Andressa", tel: "(98) 98126-0911", cnpj: "10.492.694/0001-85", ie: "124481604", end: "Av New York, 2", cidade: "São José de Ribamar/MA", email: "" },
-  { chave: "Olinda", razao: "Olinda Distribuidora de Alimentos", contato: "Suzane", tel: "(91) 98158-2468", cnpj: "02.646.290/0001-00", ie: "151959498", end: "Rod BR 316, KM 24", cidade: "Benevides/PA", email: "" },
-  { chave: "Comercial", razao: "Comercial de Alimentos Rio Guamá", contato: "Allan", tel: "(91) 99100-0711", cnpj: "83.353.045/0008-43", ie: "152949585", end: "PS São Cristóvão, 100", cidade: "Benevides/PA", email: "" },
-  { chave: "ECIL", razao: "Empreendimento Coml IND I ECIL ltda", contato: "José", tel: "(91) 98183-8014", cnpj: "60.955.812/0001-12", ie: "102610970113", end: "Rua São Tomé, 86", cidade: "São Paulo/SP", email: "" },
-  { chave: "DeMarchi", razao: "De Marchi Belém Comércio", contato: "Fernanda", tel: "(91) 99319-2827", cnpj: "36.748.710/0001-41", ie: "156867796", end: "Rod BR 316, KM 8", cidade: "Ananindeua/PA", email: "" },
-  { chave: "Cogumelos", razao: "José Alencar de Carvalho Neto", contato: "José", tel: "(91) 98618-6671", cnpj: "31.617.894/0001-97", ie: "461078945113", end: "ET Municipal Monte Alto, KM 15", cidade: "Monte Alto/SP", email: "" },
-  { chave: "PRODUMAR", razao: "Exportadora de Produtos do Mar", contato: "Mayana", tel: "(84) 99966-0303", cnpj: "08.432.692/0003-10", ie: "204914523", end: "Rua Chile, 102 - Ribeira", cidade: "Natal/RN", email: "" },
-  { chave: "Higinor", razao: "RVM LIMA", contato: "Cláudio/Rose", tel: "(91) 98027-6067", cnpj: "170.257.370/0001-61", ie: "153881852", end: "Rua Manoel Senador Barata", cidade: "Belém/PA", email: "" },
-  { chave: "Yamaex", razao: "Yamaex Produtos Alimentícios", contato: "André", tel: "(91) 99112-3596", cnpj: "09.208.379/0001-02", ie: "152672176", end: "Rua Vinte e Oito de Setembro, 1197", cidade: "Belém/PA", email: "" },
-  { chave: "EBD", razao: "Empresa Brasileira de Distribuição", contato: "Robson/Jorge", tel: "(91) 99112-6238", cnpj: "05.402.904/0001-67", ie: "150778056", end: "Rod Mário Covas, 472", cidade: "Ananindeua/PA", email: "" },
-  { chave: "Marfrios", razao: "M C SOLANO DA COSTA AÇOUGUE", contato: "Silmara", tel: "(91) 98253-8430", cnpj: "45.097.533/0001-71", ie: "158137337", end: "Av Rômulo Maiorana, 231", cidade: "Belém/PA", email: "" },
-  { chave: "HEALTH", razao: "Health Comércio LTDA", contato: "Fábio", tel: "(91) 99373-3330", cnpj: "17.996.244/0001-79", ie: "154074225", end: "Av Doutor Anísio, 713", cidade: "Santarém/PA", email: "" },
-  { chave: "DOS PLÁSTICOS", razao: "JAMES L H TOME E CIA", contato: "Michele", tel: "(91) 99172-5563", cnpj: "16.965.024/0002-04", ie: "154125520", end: "Av José Bonifácio, 2584", cidade: "Belém/PA", email: "" },
-  { chave: "LOGUI", razao: "TVL FOODSE DISTRIBUIÇÃO", contato: "Henrique", tel: "(91) 98111-2428", cnpj: "59.570.336/0001-32", ie: "750123680", end: "Rua Leopoldo Teixeira, 66", cidade: "Ananindeua/PA", email: "" },
-  { chave: "NIPPOBRAZ", razao: "AMAZÔNIA INDÚSTRIA ALIMENTÍCIA AS", contato: "Sakura", tel: "(91) 99220-5067", cnpj: "02.280.145/0001-19", ie: "151971625", end: "Tv Apinagés, 475", cidade: "Belém/PA", email: "" },
-  { chave: "QUEIJARIA", razao: "QUEIJARIA DO PORTUGA", contato: "REGINALDO", tel: "(91) 99337-9546", cnpj: "51.143.441/0001-83", ie: "159028051", end: "Vila - 1146 - IBIZA", cidade: "Altamira/PA", email: "" }
+  { chave: "CEASINHA", razao: "C S HORTIFRUTI COMERCIO", contato: "Samantha", tel: "(91) 98437-6512", cnpj: "36.697.355/0001-29", ie: "156860007", end: "Estrada da Ceasa", cidade: "Belém/PA", email: "" },
+  { chave: "AMBEV", razao: "CRBS S.A (Ambev)", contato: "Eduardo", tel: "(91) 98448-7252", cnpj: "56.228.356/0110-95", ie: "153572558", end: "Rua Uriboca. 1620", cidade: "Marituba", email: "" }
 ];
 
-// Função que faz o cruzamento do nome da Planilha com a Base de Dados
 function buscarDadosFornecedor(nomePlanilha) {
   if (!nomePlanilha) return {};
   const n = nomePlanilha.toLowerCase().replace(/[^a-z0-9]/g, '');
   for (let f of FORNECEDORES_DB) {
     const key = f.chave.toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (n.includes(key) || key.includes(n)) {
-      return f;
-    }
+    if (n.includes(key) || key.includes(n)) { return f; }
   }
   return {};
 }
 
-// ─────────────────────────────────────────────
-//  NAV
-// ─────────────────────────────────────────────
+// ============================================================================
+// 3. NAVEGAÇÃO E TOASTS
+// ============================================================================
 function goHome() { goScreen('home'); }
-
 function goScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -492,22 +428,17 @@ function goScreen(id) {
   if (id === 'catalog') { renderCatalog(); renderCatalogStats(); updateSupplierList(); }
 }
 
-// ─────────────────────────────────────────────
-//  TOAST
-// ─────────────────────────────────────────────
 let toastTimer;
 function showToast(msg, type = 'info') {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'show ' + type;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.className = ''; }, 3500);
+  t.textContent = msg; t.className = 'show ' + type;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.className = ''; }, 3500);
 }
 
-// ─────────────────────────────────────────────
-//  CATALOG LOGIC
-// ─────────────────────────────────────────────
-function saveCatalog() { localStorage.setItem('sb_catalog', JSON.stringify(catalog)); }
+// ============================================================================
+// 4. LÓGICA DO CADASTRO (CATÁLOGO)
+// ============================================================================
+function saveCatalog() { localStorage.setItem('sb_catalog_v3', JSON.stringify(catalog)); }
 function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
 
 function addProduct() {
@@ -517,47 +448,23 @@ function addProduct() {
   const price = parseFloat(document.getElementById('new-price').value);
 
   if (!supplier || !product || !unit || isNaN(price) || price < 0) {
-    showToast('Preencha todos os campos corretamente.', 'error');
-    return;
+    showToast('Preencha os campos corretamente.', 'error'); return;
   }
-
-  const dup = catalog.find(c => c.supplier.toLowerCase() === supplier.toLowerCase() && c.product.toLowerCase() === product.toLowerCase());
-  if (dup) { showToast('Produto já cadastrado para este fornecedor.', 'error'); return; }
-
   catalog.push({ id: generateId(), supplier, product, unit, price });
-  saveCatalog();
-  ['new-supplier','new-product','new-unit','new-price'].forEach(id => document.getElementById(id).value = '');
-  renderCatalog(); renderCatalogStats(); updateSupplierList();
-  showToast('Produto adicionado com sucesso!', 'success');
+  saveCatalog(); renderCatalog(); renderCatalogStats(); updateSupplierList();
+  showToast('Adicionado!', 'success');
 }
 
 function deleteProduct(id) {
-  if (!confirm('Remover este produto do cadastro?')) return;
   catalog = catalog.filter(c => c.id !== id);
   saveCatalog(); renderCatalog(); renderCatalogStats(); updateSupplierList();
-  showToast('Produto removido.', 'info');
-}
-
-
-function clearCatalog() {
-  if (!confirm('⚠️ TEM CERTEZA? Isso apagará todos os produtos da base de dados local. A ação não pode ser desfeita.')) return;
-  catalog = [];
-  saveCatalog(); 
-  renderCatalog(); 
-  renderCatalogStats(); 
-  updateSupplierList();
-  showToast('Base de dados limpa com sucesso.', 'success');
 }
 
 function updateField(id, field, val) {
   const item = catalog.find(c => c.id === id);
   if (!item) return;
-  if (field === 'price') {
-    const p = parseFloat(val);
-    if (!isNaN(p)) item[field] = p;
-  } else {
-    item[field] = val;
-  }
+  if (field === 'price') { const p = parseFloat(val); if (!isNaN(p)) item[field] = p; } 
+  else { item[field] = val; }
   saveCatalog();
 }
 
@@ -566,23 +473,21 @@ function renderCatalog() {
   const supplierFilter = (document.getElementById('cat-supplier-filter')?.value || '').toLowerCase();
 
   let items = catalog.filter(c => {
-    const matchSearch = !search || c.product.toLowerCase().includes(search) || c.supplier.toLowerCase().includes(search);
-    const matchSupplier = !supplierFilter || c.supplier.toLowerCase() === supplierFilter;
-    return matchSearch && matchSupplier;
+    return (!search || c.product.toLowerCase().includes(search) || c.supplier.toLowerCase().includes(search)) &&
+           (!supplierFilter || c.supplier.toLowerCase() === supplierFilter);
   });
+  
   const tbody = document.getElementById('catalog-body');
   if (items.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🗃️</div><p>${catalog.length === 0 ? 'Nenhum produto cadastrado.<br>Adicione produtos acima ou importe um arquivo Excel.' : 'Nenhum produto encontrado para o filtro aplicado.'}</p></div></td></tr>`;
-    return;
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">O catálogo está vazio</div></td></tr>`; return;
   }
-
   tbody.innerHTML = items.map((c, i) => `
     <tr>
-      <td style="color:var(--gray-400);font-size:11px">${i+1}</td>
+      <td>${i+1}</td>
       <td><input class="cell-edit" value="${esc(c.supplier)}" onchange="updateField('${c.id}','supplier',this.value)"></td>
       <td><input class="cell-edit" value="${esc(c.product)}" onchange="updateField('${c.id}','product',this.value)"></td>
-      <td><input class="cell-edit" value="${esc(c.unit)}" onchange="updateField('${c.id}','unit',this.value)" style="width:60px"></td>
-      <td><input class="cell-edit" type="number" step="0.01" value="${c.price.toFixed(2)}" onchange="updateField('${c.id}','price',this.value)" style="width:80px"></td>
+      <td><input class="cell-edit" value="${esc(c.unit)}" onchange="updateField('${c.id}','unit',this.value)"></td>
+      <td><input class="cell-edit" type="number" step="0.01" value="${c.price.toFixed(2)}" onchange="updateField('${c.id}','price',this.value)"></td>
       <td><button class="del-btn" onclick="deleteProduct('${c.id}')">🗑</button></td>
     </tr>
   `).join('');
@@ -593,12 +498,7 @@ function renderCatalogStats() {
   if (catalog.length === 0) { el.style.display = 'none'; return; }
   el.style.display = 'flex';
   const suppliers = new Set(catalog.map(c => c.supplier)).size;
-  el.innerHTML = `
-    <div class="stat"><div class="val red">${catalog.length}</div><div class="lbl">Produtos</div></div>
-    <div class="stat"><div class="val">${suppliers}</div><div class="lbl">Fornecedores</div></div>
-    <div class="stat"><div class="val">R$ ${Math.min(...catalog.map(c=>c.price)).toFixed(2)}</div><div class="lbl">Menor preço</div></div>
-    <div class="stat"><div class="val">R$ ${Math.max(...catalog.map(c=>c.price)).toFixed(2)}</div><div class="lbl">Maior preço</div></div>
-  `;
+  el.innerHTML = `<div class="stat"><div class="val red">${catalog.length}</div><div class="lbl">Produtos Cadastrados</div></div><div class="stat"><div class="val">${suppliers}</div><div class="lbl">Fornecedores Distintos</div></div>`;
 }
 
 function updateSupplierList() {
@@ -611,580 +511,409 @@ function updateSupplierList() {
 
 function importCatalogExcel() { document.getElementById('cat-import-file').click(); }
 function handleCatalogImport(input) {
-  const file = input.files[0];
-  if (!file) return;
+  const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
     try {
       const wb = XLSX.read(e.target.result, { type: 'binary' });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-      let added = 0;
-      let updated = 0;
       rows.forEach(row => {
-        const supplier = String(row['Fornecedor'] || row['FORNECEDOR'] || row['fornecedor'] || '').trim();
-        const product = String(row['Produto'] || row['PRODUTO'] || row['produto'] || row['Descrição'] || '').trim();
-        const unit = String(row['Unidade'] || row['UNIDADE'] || row['unidade'] || row['UN'] || '').trim();
-        const rawPrice = row['Preço'] || row['PREÇO'] || row['preco'] || row['Valor'] || row['VALOR'] || 0;
+        const supplier = String(row['Fornecedor'] || row['FORNECEDOR'] || '').trim();
+        const product = String(row['Produto'] || row['PRODUTO'] || row['Descrição'] || '').trim();
+        const unit = String(row['Unidade'] || row['UN'] || '').trim();
+        const rawPrice = row['Preço'] || row['Valor'] || 0;
         const price = parseFloat(String(rawPrice).replace(',', '.')) || 0;
-        
         if (!supplier || !product) return;
         
         const exists = catalog.find(c => c.supplier.toLowerCase() === supplier.toLowerCase() && c.product.toLowerCase() === product.toLowerCase());
-        
-        if (exists) { 
-          // Correção Importante: Força a sobrescrita do preço pelo Excel, ignorando se for 0 para permitir "limpeza/correção" manual da base
-          exists.unit = unit || exists.unit; 
-          exists.price = price; 
-          updated++;
-          return; 
-        }
-        
-        catalog.push({ id: generateId(), supplier, product, unit, price });
-        added++;
+        if (exists) { exists.unit = unit || exists.unit; exists.price = price; }
+        else { catalog.push({ id: generateId(), supplier, product, unit, price }); }
       });
       saveCatalog(); renderCatalog(); renderCatalogStats(); updateSupplierList();
-      showToast(`${added} produto(s) importado(s) e ${updated} atualizado(s) com sucesso.`, 'success');
-    } catch (err) {
-      showToast('Erro ao ler o arquivo. Verifique o formato.', 'error');
-    }
+      showToast(`Importação em lote concluída com sucesso!`, 'success');
+    } catch (err) { showToast('Erro ao ler a planilha do catálogo.', 'error'); }
     input.value = '';
   };
   reader.readAsBinaryString(file);
 }
 
-function exportCatalog() {
-  if (catalog.length === 0) { showToast('Nenhum produto para exportar.', 'info'); return; }
-  const rows = catalog.map(c => ({ Fornecedor: c.supplier, Produto: c.product, Unidade: c.unit, 'Preço': c.price }));
-  const ws = XLSX.utils.json_to_sheet(rows);
-  const wb = XLSX.utils.book_new();
-  XLS.utils.book_append_sheet(wb, ws, 'Cadastro');
-  XLSX.writeFile(wb, 'Cadastro_Produtos_SushiBoulevard.xlsx');
-  showToast('Exportado com sucesso!', 'success');
-}
-
-// ─────────────────────────────────────────────
-//  SC IMPORT
-// ─────────────────────────────────────────────
+// ============================================================================
+// 5. IMPORTAÇÃO DA OC
+// ============================================================================
 function handleSCFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  scFile = file;
-  document.getElementById('fp-name').textContent = file.name;
-  document.getElementById('fp-size').textContent = (file.size / 1024).toFixed(1) + ' KB';
+  scFile = input.files[0];
+  document.getElementById('fp-name').textContent = scFile.name;
   document.getElementById('file-preview').style.display = 'block';
-  document.getElementById('results-area').style.display = 'none';
 }
 
-const dz = document.getElementById('drop-zone');
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('dragover');
-  const file = e.dataTransfer.files[0];
-  if (!file) return;
-  const inp = document.getElementById('sc-file');
-  const dt = new DataTransfer(); dt.items.add(file); inp.files = dt.files;
-  handleSCFile(inp);
-});
-
-function resetImport() {
-  scFile = null; scData = null;
-  document.getElementById('sc-file').value = '';
-  document.getElementById('file-preview').style.display = 'none';
-  document.getElementById('results-area').style.display = 'none';
-  openCards.clear();
+function resetImport() { 
+  scFile = null; 
+  scData = null; 
+  document.getElementById('file-preview').style.display = 'none'; 
+  document.getElementById('results-area').style.display = 'none'; 
+  openCards.clear(); 
 }
 
-// ─────────────────────────────────────────────
-//  PARSE SC EXCEL
-// ─────────────────────────────────────────────
+function excelDateToStr(val) {
+  if (!val) return '';
+  let numVal = Number(String(val).replace(',', '.'));
+  if (!isNaN(numVal) && numVal > 10000) { 
+    return new Date(Math.round((numVal - 25569) * 86400 * 1000)).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+  }
+  return String(val).trim();
+}
+
 function processSC() {
   if (!scFile) return;
-  const btn = document.getElementById('btn-generate');
-  btn.innerHTML = '<span class="spinner"></span> Processando...';
-  btn.disabled = true;
-
   const reader = new FileReader();
   reader.onload = e => {
-    try {
-      const wb = XLSX.read(e.target.result, { type: 'binary' });
-      scData = parseSCWorkbook(wb);
-      openCards.clear();
-      renderResults();
-    } catch (err) {
-      showToast('Erro ao processar o arquivo: ' + err.message, 'error');
-    }
-    btn.innerHTML = '⚡ Gerar Pedido de Compra';
-    btn.disabled = false;
+    const wb = XLSX.read(e.target.result, { type: 'binary' });
+    scData = parseSCWorkbook(wb);
+    
+    scData.forEach(supplier => {
+        supplier._matched = supplier.items.map(item => {
+          const catItem = catalog.find(c => c.product.toLowerCase() === item.product.toLowerCase() && c.supplier.toLowerCase() === supplier.supplierName.toLowerCase());
+          return { ...item, price: catItem ? catItem.price : (item.price || 0), found: !!catItem || item.price > 0 };
+        });
+    });
+
+    openCards.clear(); 
+    document.getElementById('results-area').style.display = 'block';
+    renderResults();
   };
   reader.readAsBinaryString(scFile);
 }
 
 function parseSCWorkbook(wb) {
-  const SKIP_SHEETS = ['BASE', 'base', 'Base'];
   const result = [];
   wb.SheetNames.forEach(sheetName => {
-    if (SKIP_SHEETS.some(s => s.toLowerCase() === sheetName.toLowerCase())) return;
+    if (['BASE', 'base'].includes(sheetName)) return;
     const ws = wb.Sheets[sheetName];
     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    let paymentForm = 'Boleto', paymentTerm = '0 Dias', orderDate = new Date().toLocaleDateString('pt-BR'), deliveryDate = '', obs = '', items = [], foundItems = false;
 
-    let supplierName = sheetName;
-    let supplierContact = '', paymentForm = '', paymentTerm = '', orderDate = '', deliveryDate = '';
-    let items = [];
-    let foundItemsHeader = false;
-
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      const rowStr = row.join('\t').toLowerCase();
-
-      if (!foundItemsHeader && rowStr.includes('descrição') && rowStr.includes('quantidade')) { foundItemsHeader = true; continue; }
-
-      if (foundItemsHeader) {
-        const itemNum = row[0];
-        const productName = String(row[1] || '').trim();
-        const unitStr = String(row[2] || '').trim();
-        const qty = parseFloat(String(row[3] || '0').replace(',', '.')) || 0;
-
-        if (!productName || productName.toLowerCase().includes('observ')) break;
-        if (typeof itemNum === 'number' || (typeof itemNum === 'string' && /^\d+$/.test(itemNum.trim()))) {
-          if (productName) items.push({ product: productName, unit: unitStr, qty });
+    for (let row of rows) {
+      const rowStr = row.join(' ').toLowerCase();
+      if (!foundItems && rowStr.includes('descrição') && rowStr.includes('quantidade')) { foundItems = true; continue; }
+      if (foundItems) {
+        const pName = String(row[1] || '').trim();
+        if (pName && !pName.toLowerCase().includes('observ')) {
+          items.push({ product: pName, unit: String(row[2] || '').trim(), qty: parseFloat(String(row[3] || '0').replace(',','.')) || 0 });
         }
       }
-
-      if (rowStr.includes('fornecedor:')) {
-        for (let j = 0; j < row.length; j++) {
-          if (String(row[j]).toLowerCase().includes('fornecedor:')) supplierName = String(row[j+1] || row[j]).replace(/fornecedor:\s*/i, '').trim() || sheetName;
-          if (String(row[j]).toLowerCase().includes('contato:')) supplierContact = String(row[j+1] || '').trim();
-        }
+      if (rowStr.includes('pagamento')) paymentForm = String(row[row.findIndex(c => String(c).toLowerCase().includes('pagamento'))+1] || paymentForm).trim();
+      if (rowStr.includes('prazo')) paymentTerm = String(row[row.findIndex(c => String(c).toLowerCase().includes('prazo'))+1] || paymentTerm).trim();
+      if (rowStr.includes('entrega')) {
+        let idx = row.findIndex(c => String(c).toLowerCase().includes('entrega'));
+        deliveryDate = excelDateToStr(row[idx+1] || row[idx+2] || row[idx+3]);
       }
-
-      if (rowStr.includes('forma de pagamento:')) {
-        for (let j = 0; j < row.length; j++) {
-          if (String(row[j]).toLowerCase().includes('forma de pagamento:')) paymentForm = String(row[j+1] || '').trim();
-          if (String(row[j]).toLowerCase().includes('prazo de pagamento:')) paymentTerm = String(row[j+1] || '').trim();
-        }
-      }
-
-      if (rowStr.includes('data da oc:')) {
-        for (let j = 0; j < row.length; j++) {
-          if (String(row[j]).toLowerCase().includes('data da oc:')) orderDate = excelDateToStr(row[j+1]);
-          if (String(row[j]).toLowerCase().includes('previsão de entrega:')) deliveryDate = excelDateToStr(row[j+1]);
-        }
+      if (rowStr.includes('observaç')) {
+         let idx = row.findIndex(c => String(c).toLowerCase().includes('observaç'));
+         obs = String(row[idx+1] || '').trim();
       }
     }
-
-    if (!orderDate) orderDate = today();
-    if (!deliveryDate) deliveryDate = today();
-
-    if (items.length > 0) {
-      result.push({ sheetName, supplierName: supplierName || sheetName, supplierContact, paymentForm, paymentTerm, orderDate, deliveryDate, items });
-    }
+    if (items.length > 0) result.push({ sheetName, supplierName: sheetName, paymentForm, paymentTerm, orderDate, deliveryDate, obs, items });
   });
   return result;
 }
 
-function excelDateToStr(val) {
-  if (!val) return today();
-  if (typeof val === 'number') { return new Date((val - 25569) * 86400 * 1000).toLocaleDateString('pt-BR'); }
-  if (typeof val === 'string') {
-    const parts = val.match(/\d+/g);
-    if (parts && parts.length >= 3) return `${parts[0].padStart(2,'0')}/${parts[1].padStart(2,'0')}/${parts[2]}`;
-    return val;
-  }
-  return today();
+function formatBR(val, decimals = 2) {
+    return val.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
 
-function today() { return new Date().toLocaleDateString('pt-BR'); }
-
-function matchItems(supplierName, items) {
-  return items.map(item => {
-    // Preserve existing 'found' logic if it was already matched/edited manually
-    if (item.found !== undefined) return item; 
-
-    const catItem = catalog.find(c => {
-      const suppMatch = supplierNameMatch(c.supplier, supplierName);
-      const prodMatch = c.product.toLowerCase().replace(/\s+/g,' ').trim() === item.product.toLowerCase().replace(/\s+/g,' ').trim();
-      return suppMatch && prodMatch;
-    });
-
-    if (catItem) return { ...item, unit: catItem.unit || item.unit, price: catItem.price, found: true };
-    return { ...item, price: 0, found: false };
-  });
+function updateLiveValue(sIdx, iIdx, field, val) {
+    scData[sIdx]._matched[iIdx][field] = parseFloat(val) || 0;
+    scData[sIdx]._matched[iIdx].found = true;
+    renderResults(); 
 }
 
-function supplierNameMatch(catSupplier, scSupplier) {
-  const a = catSupplier.toLowerCase().replace(/[^a-z0-9]/g,' ').split(/\s+/).filter(Boolean);
-  const b = scSupplier.toLowerCase().replace(/[^a-z0-9]/g,' ').split(/\s+/).filter(Boolean);
-  return a.some(w => w.length > 2 && b.some(x => x.includes(w) || w.includes(x)));
+function updateTextField(sIdx, field, val) {
+    scData[sIdx][field] = val;
 }
 
-// ─────────────────────────────────────────────
-//  INLINE EDITING ON IMPORT RESULTS
-// ─────────────────────────────────────────────
-function updateSCItem(sIdx, iIdx, field, val) {
-  const num = parseFloat(String(val).replace(',', '.')) || 0;
-  let item = scData[sIdx]._matched[iIdx];
-  item[field] = num;
-  
-  if (field === 'price' && num > 0) {
-    item.found = true;
-  }
-  renderResults();
-}
-
-// ─────────────────────────────────────────────
-//  RENDER RESULTS
-// ─────────────────────────────────────────────
 function renderResults() {
-  const area = document.getElementById('results-area');
-  area.style.display = 'block';
-
   const grid = document.getElementById('results-grid');
-  const alertsArea = document.getElementById('alerts-area');
-  const statsEl = document.getElementById('stats-bar-results');
-
   grid.innerHTML = '';
-  alertsArea.innerHTML = '';
   
-  if (!scData || scData.length === 0) {
-    alertsArea.innerHTML = `<div class="alert alert-warning">⚠️ Nenhum fornecedor com itens encontrado no arquivo. Verifique se o arquivo está no formato correto.</div>`;
-    statsEl.innerHTML = '';
-    return;
-  }
-
-  let totalOk = 0, totalWarn = 0, totalError = 0;
-
   scData.forEach((supplier, idx) => {
-    const matched = matchItems(supplier.supplierName, supplier._matched || supplier.items);
     
-    // RANKEAMENTO AUTOMÁTICO
-    matched.sort((a, b) => {
-      const aAtivo = a.qty > 0 ? 1 : 0;
-      const bAtivo = b.qty > 0 ? 1 : 0;
-      if (aAtivo !== bAtivo) return bAtivo - aAtivo;
-      return a.product.localeCompare(b.product);
-    });
-    
-    supplier._matched = matched;
-
-    const missing = matched.filter(i => !i.found);
-    const hasAll = missing.length === 0;
-    const hasNone = missing.length === matched.length;
-    const status = hasAll ? 'ok' : (hasNone ? 'error' : 'partial');
-
-    if (status === 'ok') totalOk++;
-    else if (status === 'error') totalError++;
-    else totalWarn++;
+    const missing = supplier._matched.filter(i => !i.found);
+    const status = missing.length === 0 ? 'ok' : 'partial';
     supplier._status = status;
 
-    const badgeClass = status === 'ok' ? 'badge-ok' : (status === 'error' ? 'badge-error' : 'badge-partial');
-    const badgeText = status === 'ok' ? '✔ Pronto' : (status === 'error' ? '✗ Pendente' : '⚠ Parcial');
-    const canDownload = status === 'ok' || status === 'partial';
-
-    const total = matched.reduce((s, i) => s + (i.found ? i.qty * i.price : 0), 0);
-
-    const rowsHtml = matched.map((item, itemIdx) => `
-      <tr>
-        <td>${esc(item.product)}</td>
-        <td>${esc(item.unit)}</td>
-        <td><input type="number" class="sc-edit-input" style="width:70px; padding:4px;" value="${item.qty}" step="0.01" onchange="updateSCItem(${idx}, ${itemIdx}, 'qty', this.value)"></td>
-        <td>
-          <div style="display:flex; align-items:center; gap:6px">
-            R$ <input type="number" class="sc-edit-input" style="width:80px; padding:4px;" value="${item.price.toFixed(2)}" step="0.01" placeholder="0.00" onchange="updateSCItem(${idx}, ${itemIdx}, 'price', this.value)">
-          </div>
-        </td>
-        <td style="font-weight:600">${item.found || item.price > 0 ? 'R$ ' + (item.qty * item.price).toFixed(2) : '<span class="missing">—</span>'}</td>
-      </tr>
-    `).join('');
-
+    const rowsHtml = supplier._matched.map((i, iIdx) => `<tr>
+      <td>${esc(i.product)}</td>
+      <td><input type="number" class="sc-edit-input" style="width:70px" value="${i.qty}" step="0.01" onchange="updateLiveValue(${idx}, ${iIdx}, 'qty', this.value)"></td>
+      <td>R$ <input type="number" class="sc-edit-input" style="width:90px" value="${i.price.toFixed(2)}" step="0.01" onchange="updateLiveValue(${idx}, ${iIdx}, 'price', this.value)"></td>
+      <td style="font-weight: bold; color: #fff;">R$ ${formatBR(i.qty * i.price)}</td>
+    </tr>`).join('');
+    
     const isOpen = openCards.has(idx) ? 'open' : '';
 
     grid.innerHTML += `
-      <div class="supplier-card ${status}" id="scard-${idx}">
+      <div class="supplier-card ${status}">
         <div class="supplier-card-header" onclick="toggleCard(${idx})">
           <div class="supplier-name">${esc(supplier.supplierName)}</div>
-          <span class="badge ${badgeClass}">${badgeText}</span>
-          <span style="color:var(--gray-400);font-size:13px">${matched.length} itens · R$ ${total.toFixed(2)}</span>
-          ${canDownload ? `<button class="btn btn-primary btn-sm" onclick="event.stopPropagation();downloadPDF(${idx})">⬇ PDF</button>` : ''}
-          <span class="chevron ${isOpen}" id="chev-${idx}">▼</span>
+          <div style="font-family: serif; color: var(--orange); font-size: 16px; margin-right: 15px; font-weight: bold;">
+             Total: R$ ${formatBR(supplier._matched.reduce((acc, curr) => acc + (curr.qty * curr.price), 0))}
+          </div>
+          <div>
+            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();previewSinglePDF(${idx})">👁️ Visualizar PDF</button>
+            <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();downloadPDF(${idx})">⬇ Baixar PDF</button>
+          </div>
         </div>
         <div class="collapse-content supplier-card-body ${isOpen}" id="cbody-${idx}">
-          ${missing.length > 0 ? `<div class="alert alert-warning" style="margin-top:12px">⚠️ ${missing.length} produto(s) sem preço no cadastro. <strong>Insira manualmente abaixo ou cadastre na base.</strong></div>` : ''}
+          <div class="supplier-config-grid">
+            <div class="form-field"><label>Data da OC</label><input type="text" value="${esc(supplier.orderDate)}" onchange="updateTextField(${idx}, 'orderDate', this.value)"></div>
+            <div class="form-field"><label>Data de Entrega</label><input type="text" value="${esc(supplier.deliveryDate)}" onchange="updateTextField(${idx}, 'deliveryDate', this.value)"></div>
+            <div class="form-field"><label>Observações do Pedido</label><input type="text" value="${esc(supplier.obs)}" onchange="updateTextField(${idx}, 'obs', this.value)"></div>
+          </div>
           <table class="items-table">
-            <thead><tr><th>Produto</th><th>Unidade</th><th>Qtd</th><th>Preço Unit.</th><th>Total</th></tr></thead>
-            <tbody>${rowsHtml}</tbody>
+             <thead><tr><th>Produto</th><th>Qtd</th><th>Preço Unit.</th><th>Total</th></tr></thead>
+             <tbody>${rowsHtml}</tbody>
           </table>
         </div>
-      </div>
-    `;
-  });
-
-  statsEl.innerHTML = `
-    <div class="stat"><div class="val">${scData.length}</div><div class="lbl">Fornecedores</div></div>
-    <div class="stat"><div class="val green">${totalOk}</div><div class="lbl">Prontos</div></div>
-    <div class="stat"><div class="val orange">${totalWarn}</div><div class="lbl">Parciais</div></div>
-    <div class="stat"><div class="val red">${totalError}</div><div class="lbl">Pendentes</div></div>
-  `;
-  statsEl.className = 'stats-bar';
-
-  if (totalError > 0 || totalWarn > 0) {
-    alertsArea.innerHTML = `<div class="alert alert-info">ℹ️ <strong>Dica:</strong> Você pode editar os preços diretamente na tabela acima para liberar o fornecedor.</div>`;
-  }
-  if (totalOk === scData.length) {
-    // BOTÕES DE LOTE ADICIONADOS AQUI
-    alertsArea.innerHTML = `<div class="alert alert-success">✅ Todos os pedidos estão prontos. Você pode baixar individualmente ou exportar todos de uma vez.</div>
-      <div style="margin-top:12px; display:flex; gap:12px;">
-        <button class="btn btn-primary" onclick="downloadAllZip()">🗜️ Baixar Todos (.ZIP)</button>
-        <button class="btn btn-secondary" onclick="downloadAllPDF()">⬇ Baixar Todos PDFs Livres</button>
       </div>`;
-  }
+  });
+  
+  document.getElementById('alerts-area').innerHTML = `<div class="alert alert-success" style="justify-content: space-between; align-items: center;">Tudo pronto para geração! <button class="btn btn-primary btn-sm" onclick="downloadAllZip()">🗜️ Baixar Todos os PDFs (.ZIP)</button></div>`;
 }
 
 function toggleCard(idx) {
+  if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+      document.activeElement.blur(); 
+  }
+  
   const body = document.getElementById('cbody-' + idx);
-  const chev = document.getElementById('chev-' + idx);
   body.classList.toggle('open');
-  chev.classList.toggle('open');
-  if (body.classList.contains('open')) openCards.add(idx);
-  else openCards.delete(idx);
+  if (body.classList.contains('open')) {
+      openCards.add(idx);
+  } else {
+      openCards.delete(idx);
+  }
 }
 
-// ──────
-//  PDF GENERATION EXATO AO MODELO ERP COM NOVO LAYOUT DE 30 ITENS
-// 
-function buildPDFDocument(supplier, unitKey, ocNum) {
+// ============================================================================
+// 6. MÁQUINA DE DESENHO NATIVO NO PDF - CORRIGIDA!
+// ============================================================================
+function buildPDFDocument(supplier, unitKey, ocNum, isPreview = false) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const unitData = UNITS[unitKey];
 
-  const items = supplier._matched || [];
-  const validItems = items.filter(i => i.found && i.qty > 0);
+  const unitData = UNITS[unitKey];
+  const db = buscarDadosFornecedor(supplier.supplierName);
+  const validItems = supplier._matched.filter(i => i.qty > 0);
   const total = validItems.reduce((s, i) => s + i.qty * i.price, 0);
 
-  // Helper para desenhar as datas em caixinhas separadas
-  function drawDateBoxes(label, dateStr, startX, startY) {
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.text(label, startX, startY + 5);
-    const parts = (dateStr || today()).split('/');
-    let bx = startX + 18;
-    [parts[0] || '', parts[1] || '', parts[2] || ''].forEach((p, i) => {
-      let w = i === 2 ? 14 : 9;
-      doc.setDrawColor(0);
-      doc.setLineWidth(0.3);
-      doc.rect(bx, startY, w, 7);
-      doc.setFont('helvetica', 'normal');
-      doc.text(p, bx + w/2, startY + 5, {align: 'center'});
-      bx += w + 2;
-    });
-  }
+  let yPositionStart = 48; // Altura onde o conteúdo começa
 
-  // ====== CABEÇALHO ======
-  drawDateBoxes('Data:', supplier.orderDate, 140, 12);
-  drawDateBoxes('Entrega:', supplier.deliveryDate, 134, 21);
-
-  // Logo e Título (Com captura direta do HTML)
-  try {
-    const imgLogo = document.querySelector('.logo-img');
-    if (imgLogo) {
-      const canvas = document.createElement('canvas');
-      canvas.width = imgLogo.naturalWidth || 65;
-      canvas.height = imgLogo.naturalHeight || 65;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(imgLogo, 0, 0, canvas.width, canvas.height);
-      doc.addImage(canvas.toDataURL('image/png'), 'PNG', 12, 10, 14, 14);
-      doc.setFontSize(18);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Sushi Boulevard', 29, 19);
-    } else {
-      throw new Error();
-    }
-  } catch (e) {
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Sushi Boulevard', 12, 18);
-  }
-  
-  doc.setFontSize(14);
-  doc.text('OC - Ordem de Compras', 12, 30);
-  
-  doc.setFontSize(10);
-  doc.text(`Número: ${ocNum || '511'}`, 12, 36);
-  
-  let unitNameStr = unitData.nome;
-  if(unitKey === 'cidade_nova') unitNameStr = 'Cidade Nova';
-  if(unitKey === 'delivery_umarizal') unitNameStr = 'Delivery Umarizal';
-  if(unitKey === 'duque') unitNameStr = 'Duque de Caxias';
-  if(unitKey === 'senador_lemos') unitNameStr = 'Senador Lemos';
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Unidade: ${unitNameStr}`, 60, 36);
-
-  // Ajuste do eixo Y para otimizar espaço e caber 30 itens
-  let y = 40; 
-
-  // ====== DADOS COMPRADOR ======
-  doc.setDrawColor(0);
-  doc.setFillColor(235, 235, 235);
-  doc.rect(10, y, 190, 5, 'F');
-  doc.rect(10, y, 190, 5); 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.text('DADOS COMPRADOR (PARA FATURAMENTO)', 12, y + 3.8);
-  
-  y += 5;
-  doc.rect(10, y, 190, 19); 
-  doc.setFont('helvetica', 'normal');
-  
-  doc.setFont('helvetica', 'bold'); doc.text('Razão Social:', 12, y + 4);
-  doc.setFont('helvetica', 'normal'); doc.text(unitData.nome, 35, y + 4);
-  doc.setFont('helvetica', 'bold'); doc.text('Contato:', 130, y + 4);
-  doc.setFont('helvetica', 'normal'); doc.text('Helton Paiva', 145, y + 4);
-
-  doc.setFont('helvetica', 'bold'); doc.text('Telefone:', 12, y + 9);
-  doc.setFont('helvetica', 'normal'); doc.text(unitData.tel, 28, y + 9);
-  doc.setFont('helvetica', 'bold'); doc.text('I.E.:', 130, y + 9);
-  doc.setFont('helvetica', 'normal'); doc.text(unitData.ie, 138, y + 9);
-
-  doc.setFont('helvetica', 'bold'); doc.text('Endereço:', 12, y + 14);
-  doc.setFont('helvetica', 'normal'); doc.text(unitData.end, 28, y + 14);
-  doc.setFont('helvetica', 'bold'); doc.text('CNPJ:', 130, y + 14);
-  doc.setFont('helvetica', 'normal'); doc.text(unitData.cnpj, 142, y + 14);
-
-  // Faz a pesquisa do fornecedor na base de dados
-  const db = buscarDadosFornecedor(supplier.supplierName);
-
-  // ====== DADOS FORNECEDOR ======
-  y += 21;
-  doc.setFillColor(235, 235, 235);
-  doc.rect(10, y, 190, 5, 'F');
-  doc.rect(10, y, 190, 5);
-  doc.setFont('helvetica', 'bold');
-  doc.text('DADOS FORNECEDOR', 12, y + 3.8);
-  
-  y += 5;
-  doc.rect(10, y, 190, 19); 
-  
-  doc.setFont('helvetica', 'bold'); doc.text('Fornecedor:', 12, y + 4);
-  doc.setFont('helvetica', 'normal'); doc.text(db.razao || supplier.supplierName, 33, y + 4);
-  doc.setFont('helvetica', 'bold'); doc.text('Contato:', 130, y + 4);
-  doc.setFont('helvetica', 'normal'); doc.text(db.contato || supplier.supplierContact || '', 145, y + 4);
-
-  doc.setFont('helvetica', 'bold'); doc.text('Telefone:', 12, y + 9);
-  doc.setFont('helvetica', 'normal'); doc.text(db.tel || '', 28, y + 9);
-  doc.setFont('helvetica', 'bold'); doc.text('CNPJ:', 85, y + 9);
-  doc.setFont('helvetica', 'normal'); doc.text(db.cnpj || '', 95, y + 9);
-  doc.setFont('helvetica', 'bold'); doc.text('I.E.:', 140, y + 9);
-  doc.setFont('helvetica', 'normal'); doc.text(db.ie || '', 148, y + 9);
-
-  doc.setFont('helvetica', 'bold'); doc.text('Endereço:', 12, y + 14);
-  doc.setFont('helvetica', 'normal'); doc.text(db.end || '', 28, y + 14);
-  doc.setFont('helvetica', 'bold'); doc.text('Cidade:', 130, y + 14);
-  doc.setFont('helvetica', 'normal'); doc.text(db.cidade || '', 145, y + 14);
-
-  // ====== TABELA DE ITENS (ATÉ 30) ======
-  y += 22;
-  doc.setFillColor(235, 235, 235);
-  doc.rect(10, y, 190, 5, 'F');
-  doc.rect(10, y, 190, 5); 
-  
-  // Linhas verticais do Cabeçalho
-  doc.line(18, y, 18, y + 5);
-  doc.line(110, y, 110, y + 5);
-  doc.line(128, y, 128, y + 5);
-  doc.line(150, y, 150, y + 5);
-  doc.line(172, y, 172, y + 5);
-
-  doc.setFont('helvetica', 'bold');
-  doc.text('Item', 14, y + 3.8, {align: 'center'});
-  doc.text('Produto', 20, y + 3.8);
-  doc.text('Und.', 119, y + 3.8, {align: 'center'});
-  doc.text('Qntd.', 139, y + 3.8, {align: 'center'});
-  doc.text('Valor Unit.', 161, y + 3.8, {align: 'center'});
-  doc.text('Valor Total', 186, y + 3.8, {align: 'center'});
-  
-  y += 5;
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5); // Fonte ajustada para caber nomes longos
-  
-  // Loop configurado para 30 linhas
-  for(let i = 0; i < 30; i++) {
-    doc.rect(10, y, 190, 4.5); // Altura da linha otimizada para 4.5mm
-    doc.line(18, y, 18, y + 4.5);
-    doc.line(110, y, 110, y + 4.5);
-    doc.line(128, y, 128, y + 4.5);
-    doc.line(150, y, 150, y + 4.5);
-    doc.line(172, y, 172, y + 4.5);
-
-    let item = validItems[i];
-    doc.text(`${i+1}`, 14, y + 3.3, {align: 'center'});
+  // Lógica EXCLUSIVA: Se tem imagem, desenha só a imagem. Se não tem, desenha o retângulo preto.
+  if (headerImgBase64) {
     
-    if (item) {
-      doc.text(`${item.product}`.substring(0, 65), 20, y + 3.3);
-      doc.text(`${item.unit || 'UN'}`, 119, y + 3.3, {align: 'center'});
-      doc.text(`${item.qty.toFixed(2).replace('.',',')}`, 148, y + 3.3, {align: 'right'});
-      doc.text(`R$ ${item.price.toFixed(2).replace('.',',')}`, 170, y + 3.3, {align: 'right'});
-      doc.text(`R$ ${(item.qty * item.price).toFixed(2).replace('.',',')}`, 198, y + 3.3, {align: 'right'});
-    } else {
-      doc.text(`-`, 119, y + 3.3, {align: 'center'});
-      doc.text(`0,00`, 148, y + 3.3, {align: 'right'});
-      doc.text(`R$ 0,00`, 170, y + 3.3, {align: 'right'});
-      doc.text(`R$ 0,00`, 198, y + 3.3, {align: 'right'});
+    // Tenta pegar o formato da imagem pela string base64 para evitar distorções
+    let imgFormat = 'PNG';
+    if (headerImgBase64.includes('image/jpeg') || headerImgBase64.includes('image/jpg')) {
+        imgFormat = 'JPEG';
     }
-    y += 4.5;
+
+    // Desenha a imagem APENAS no topo, com largura da folha (210) e altura restrita (45)
+    doc.addImage(headerImgBase64, imgFormat, 0, 0, 210, 45);
+    
+  } else {
+    // FALLBACK DE SEGURANÇA (Se a pessoa não colocar nenhuma imagem)
+    doc.setFillColor(15, 15, 15); doc.rect(0, 0, 210, 45, 'F');
+    doc.setFillColor(243, 111, 29); doc.circle(25, 20, 7, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+    doc.text('SB', 25, 21.5, {align: 'center'});
+    doc.setFontSize(22); doc.text('BOULEVARD', 35, 23);
+    doc.setFontSize(8); doc.setTextColor(243, 111, 29); doc.text('RESTAURANTE • COMIDA JAPONESA', 35, 28);
   }
 
-  // ====== TOTAL ======
-  y += 4;
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.text(`Total =`, 170, y);
-  doc.text(`R$ ${total.toFixed(2).replace('.',',')}`, 198, y, {align: 'right'});
-
-  // ====== RODAPÉ ======
-  y += 4;
-  doc.setFontSize(8);
-  doc.rect(10, y, 190, 7); 
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Condições de Pagamento: ${supplier.paymentForm || 'Á PRAZO'}`, 12, y + 4.5);
-  doc.text(`Parcelamento`, 90, y + 4.5);
+  // ==========================================================
+  // TEXTOS DO CABEÇALHO (AGORA EM BRANCO PARA DAR CONTRASTE)
+  // ==========================================================
+  doc.setTextColor(243, 111, 29); 
+  doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+  doc.text('OC - ORDEM DE COMPRAS', 195, 18, {align: 'right'});
   
-  y += 7;
-  doc.rect(10, y, 190, 18); 
-  doc.text(`Núm. Parc.: 00`, 12, y + 4.5);
-  doc.text(`Prazo (Caso Faturado): ${supplier.paymentTerm || '0'}`, 60, y + 4.5);
-  doc.text(`Prazo de Entrega: 0`, 12, y + 10);
-  doc.text(`Entrega na Transportadora:`, 60, y + 10);
-  doc.text(`Frete: FOB`, 12, y + 15.5);
+  doc.setTextColor(255, 255, 255); // COR BRANCA
+  doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+  doc.text(`Nº OC: ${ocNum || '---'}`, 195, 25, {align: 'right'});
   
-  y += 19;
-  doc.rect(10, y, 190, 10);
-  doc.text(`Observações:`, 12, y + 4);
+  doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+  doc.text(`Data da Emissão: ${supplier.orderDate || ''}`, 195, 31, {align: 'right'});
+  doc.text(`Previsão de Entrega: ${supplier.deliveryDate || ''}`, 195, 36, {align: 'right'});
 
-  return doc;
+  // ==========================================================
+  // CAIXA CINZA: DADOS DO COMPRADOR
+  // ==========================================================
+  doc.setDrawColor(220, 220, 220); 
+  doc.setFillColor(248, 248, 248); 
+  doc.roundedRect(15, yPositionStart, 180, 32, 2, 2, 'FD'); 
+  
+  doc.setTextColor(243, 111, 29); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+  doc.text('DADOS DO COMPRADOR', 18, yPositionStart + 6);
+  doc.setDrawColor(230, 230, 230); doc.line(18, yPositionStart + 8, 190, yPositionStart + 8); 
+
+  doc.setTextColor(50, 50, 50); doc.setFontSize(8);
+  // Linha 1
+  doc.setFont('helvetica', 'bold'); doc.text('Razão Social:', 18, yPositionStart + 14); 
+  doc.setFont('helvetica', 'normal'); doc.text(unitData.nome, 38, yPositionStart + 14);
+  doc.setFont('helvetica', 'bold'); doc.text('Contato:', 120, yPositionStart + 14); 
+  doc.setFont('helvetica', 'normal'); doc.text('Helton Paiva', 133, yPositionStart + 14);
+  // Linha 2
+  doc.setFont('helvetica', 'bold'); doc.text('CNPJ:', 18, yPositionStart + 20); 
+  doc.setFont('helvetica', 'normal'); doc.text(unitData.cnpj, 28, yPositionStart + 20);
+  doc.setFont('helvetica', 'bold'); doc.text('Telefone:', 120, yPositionStart + 20); 
+  doc.setFont('helvetica', 'normal'); doc.text(unitData.tel, 134, yPositionStart + 20);
+  // Linha 3
+  doc.setFont('helvetica', 'bold'); doc.text('I.E.:', 18, yPositionStart + 26); 
+  doc.setFont('helvetica', 'normal'); doc.text(unitData.ie, 25, yPositionStart + 26);
+  doc.setFont('helvetica', 'bold'); doc.text('E-mail:', 120, yPositionStart + 26); 
+  doc.setFont('helvetica', 'normal'); doc.text('suprimentos@sushiboulevard.com.br', 131, yPositionStart + 26);
+  // Linha 4
+  doc.setFont('helvetica', 'bold'); doc.text('Endereço:', 18, yPositionStart + 32); 
+  doc.setFont('helvetica', 'normal'); doc.text(unitData.end, 33, yPositionStart + 32);
+
+  yPositionStart += 37;
+
+  // ==========================================================
+  // CAIXA CINZA: DADOS DO FORNECEDOR
+  // ==========================================================
+  doc.setFillColor(248, 248, 248);
+  doc.roundedRect(15, yPositionStart, 180, 22, 2, 2, 'FD'); 
+  
+  doc.setTextColor(243, 111, 29); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+  doc.text('DADOS DO FORNECEDOR', 18, yPositionStart + 6);
+  doc.line(18, yPositionStart + 8, 190, yPositionStart + 8);
+
+  doc.setTextColor(50, 50, 50); doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold'); doc.text('Fornecedor:', 18, yPositionStart + 14); 
+  doc.setFont('helvetica', 'normal'); doc.text(db.razao || supplier.supplierName, 37, yPositionStart + 14);
+  
+  doc.setFont('helvetica', 'bold'); doc.text('Condição Pagto.:', 18, yPositionStart + 20); 
+  doc.setFont('helvetica', 'normal'); doc.text(supplier.paymentForm || 'Boleto', 42, yPositionStart + 20);
+  doc.setFont('helvetica', 'bold'); doc.text('Prazo:', 120, yPositionStart + 20); 
+  doc.setFont('helvetica', 'normal'); doc.text(supplier.paymentTerm || '0 Dias', 130, yPositionStart + 20);
+
+  yPositionStart += 27;
+
+  // ==========================================================
+  // TABELA AUTOMÁTICA
+  // ==========================================================
+  const tableData = validItems.map((item, i) => [
+      i + 1,
+      item.product,
+      item.unit || 'UN',
+      formatBR(item.qty, 3),
+      `R$ ${formatBR(item.price)}`,
+      `R$ ${formatBR(item.qty * item.price)}`
+  ]);
+
+  doc.autoTable({
+      startY: yPositionStart, 
+      head: [['#', 'Produto / Descrição', 'Unidade', 'Qtd.', 'Valor Unit.', 'Valor Total']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [15, 15, 15], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+      columnStyles: {
+          0: { halign: 'center', cellWidth: 10 },
+          1: { halign: 'left' },
+          2: { halign: 'center', cellWidth: 20 },
+          3: { halign: 'center', cellWidth: 20 },
+          4: { halign: 'right', cellWidth: 25 },
+          5: { halign: 'right', cellWidth: 25, fontStyle: 'bold' }
+      },
+      alternateRowStyles: { fillColor: [250, 250, 250] }, 
+      styles: { fontSize: 8, textColor: [50, 50, 50], lineColor: [220, 220, 220] },
+      margin: { left: 15, right: 15 }
+  });
+
+  let finalY = doc.lastAutoTable.finalY + 10;
+
+  // ==========================================================
+  // CAIXA PRETA: TOTAL
+  // ==========================================================
+  doc.setFillColor(15, 15, 15);
+  doc.roundedRect(125, finalY, 70, 14, 2, 2, 'F'); 
+  doc.setTextColor(255, 255, 255); doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+  doc.text('TOTAL:', 130, finalY + 9);
+  doc.setTextColor(243, 111, 29); doc.setFontSize(14);
+  doc.text(`R$ ${formatBR(total)}`, 190, finalY + 9, {align: 'right'});
+
+  finalY += 20;
+
+  // ==========================================================
+  // OBSERVAÇÕES EXTRAS
+  // ==========================================================
+  if (supplier.obs && supplier.obs.trim() !== '') {
+      if (finalY > 250) { doc.addPage(); finalY = 20; } 
+
+      doc.setFillColor(255, 243, 224);
+      doc.setDrawColor(243, 111, 29);
+      doc.setLineWidth(1);
+      doc.line(15, finalY, 15, finalY + 15); 
+      doc.rect(15, finalY, 180, 15, 'F'); 
+      
+      doc.setTextColor(243, 111, 29); doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+      doc.text('OBSERVAÇÕES DO COMPRADOR:', 20, finalY + 5);
+      doc.setTextColor(50, 50, 50); doc.setFont('helvetica', 'normal');
+      
+      const obsLines = doc.splitTextToSize(supplier.obs, 170);
+      doc.text(obsLines, 20, finalY + 10);
+      
+      finalY += 25;
+  }
+
+  // ==========================================================
+  // RODAPÉ INSTITUCIONAL
+  // ==========================================================
+  if (finalY > 260) { doc.addPage(); finalY = 20; }
+
+  doc.setFillColor(245, 245, 245);
+  doc.setDrawColor(243, 111, 29);
+  doc.setLineWidth(1.5);
+  doc.line(15, finalY, 15, finalY + 25);
+  doc.rect(15, finalY, 180, 25, 'F');
+
+  doc.setTextColor(15, 15, 15); doc.setFontSize(8.5); doc.setFont('helvetica', 'bold');
+  doc.text('AVISOS E OBSERVAÇÕES INSTITUCIONAIS:', 20, finalY + 6);
+  
+  doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(80, 80, 80);
+  doc.text('1. Verificação de CNPJ: A nota fiscal deverá ser emitida EXATAMENTE para o CNPJ e Razão Social informados nos Dados do Comprador acima.', 20, finalY + 11);
+  doc.text('2. RDC 216 ANVISA: O transporte e armazenamento dos produtos deverão seguir rigorosamente as normas sanitárias vigentes.', 20, finalY + 16);
+  doc.text('3. Conferência de Produtos: A conferência das mercadorias será realizada no ato da entrega. Divergências resultarão em devolução imediata.', 20, finalY + 21);
+
+
+  if (isPreview) {
+    window.open(doc.output('bloburl'), '_blank');
+  } else {
+    return doc;
+  }
+}
+
+// ============================================================================
+// 7. FUNÇÕES DE EXPORTAÇÃO
+// ============================================================================
+function previewSinglePDF(idx) {
+  const supplier = scData[idx];
+  const unitKey = document.getElementById('unit-dest').value || 'cidade_nova';
+  const ocNum = document.getElementById('oc-number').value.trim();
+  buildPDFDocument(supplier, unitKey, ocNum, true);
 }
 
 function downloadPDF(idx) {
   const supplier = scData[idx];
-  if (!supplier) return;
   const unitKey = document.getElementById('unit-dest').value || 'cidade_nova';
   const ocNum = document.getElementById('oc-number').value.trim();
-  
   const doc = buildPDFDocument(supplier, unitKey, ocNum);
+  
   const safeName = supplier.supplierName.replace(/[^a-zA-Z0-9\u00C0-\u024F\s]/g, '').replace(/\s+/g, '_').slice(0, 40);
   doc.save(`OC_SB_${unitKey.toUpperCase()}_${safeName}_${supplier.orderDate.replace(/\//g,'-')}.pdf`);
-  showToast(`PDF gerado: ${supplier.supplierName}`, 'success');
+  showToast(`PDF baixado com sucesso!`, 'success');
 }
 
-function downloadAllPDF() {
-  scData.forEach((s, i) => {
-    if (s._status === 'ok' || s._status === 'partial') {
-      setTimeout(() => downloadPDF(i), i * 400);
-    }
-  });
-}
-
-// PRA DALHE NO ZIP
 function downloadAllZip() {
   const zip = new JSZip();
   const unitKey = document.getElementById('unit-dest').value || 'cidade_nova';
@@ -1195,41 +924,34 @@ function downloadAllZip() {
     if (supplier._status === 'ok' || supplier._status === 'partial') {
       const doc = buildPDFDocument(supplier, unitKey, ocNum);
       const safeName = supplier.supplierName.replace(/[^a-zA-Z0-9\u00C0-\u024F\s]/g, '').replace(/\s+/g, '_').slice(0, 40);
-      const fileName = `OC_SB_${unitKey.toUpperCase()}_${safeName}_${supplier.orderDate.replace(/\//g,'-')}.pdf`;
-      zip.file(fileName, doc.output('blob'));
+      zip.file(`OC_SB_${unitKey.toUpperCase()}_${safeName}.pdf`, doc.output('blob'));
       count++;
     }
   });
 
-  if(count === 0) {
-    showToast('Nenhum fornecedor com itens válidos para exportar.', 'error');
-    return;
-  }
-
-  const defaultName = `OCs_SushiBoulevard_${today().replace(/\//g,'-')}`;
-  const zipName = prompt("Digite o nome do arquivo ZIP para exportar os PDFs:", defaultName);
+  if(count === 0) return;
   
-  if (zipName === null) return; 
+  const today = new Date().toLocaleDateString('pt-BR').replace(/\//g,'-');
+  const defaultName = `OCs_SushiBoulevard_${today}`;
+  const zipName = prompt("Digite o nome do arquivo ZIP a ser salvo:", defaultName);
+  if (!zipName) return;
 
-  showToast('Gerando arquivo ZIP, aguarde...', 'info');
-  
+  showToast('Gerando pacote ZIP de PDFs, por favor aguarde...', 'info');
+
   zip.generateAsync({type:"blob"}).then(function(content) {
-      const url = window.URL.createObjectURL(content);
       const a = document.createElement("a");
-      a.href = url;
-      a.download = (zipName || defaultName) + ".zip";
-      document.body.appendChild(a);
+      a.href = window.URL.createObjectURL(content);
+      a.download = zipName + ".zip";
       a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-      showToast('ZIP gerado com sucesso!', 'success');
+      showToast('Download do pacote ZIP concluído!', 'success');
   });
 }
-function esc(str) {
-  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-updateSupplierList();
+
+function esc(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+updateSupplierList(); 
 renderCatalog();
+
 </script>
 </body>
 </html>
